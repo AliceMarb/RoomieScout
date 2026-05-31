@@ -11,6 +11,8 @@ type FlowState = {
   result?: CompatibilityResult & { aiSummary?: string };
   initiatorPersona?: Persona;
   roommatePersona?: Persona;
+  initiatorName?: string;
+  roommateName?: string;
 };
 
 function PersonaCard({ persona, label }: { persona: Persona; label: string }) {
@@ -95,6 +97,8 @@ export default function ResultsView({ flowId }: { flowId: string }) {
   }
 
   const { score, categories, summary, aiSummary, dealbreakers } = state.result;
+  const nameA = state.initiatorName?.trim() || "Person 1";
+  const nameB = state.roommateName?.trim() || "Person 2";
   const matchBand =
     score >= 85 ? "Excellent Match" :
     score >= 70 ? "Strong Match" :
@@ -105,8 +109,8 @@ export default function ResultsView({ flowId }: { flowId: string }) {
     <div className="space-y-6">
       {state.initiatorPersona && state.roommatePersona && (
         <div className="flex gap-4">
-          <PersonaCard persona={state.initiatorPersona} label="Person 1" />
-          <PersonaCard persona={state.roommatePersona} label="Person 2" />
+          <PersonaCard persona={state.initiatorPersona} label={nameA} />
+          <PersonaCard persona={state.roommatePersona} label={nameB} />
         </div>
       )}
 
@@ -136,8 +140,8 @@ export default function ResultsView({ flowId }: { flowId: string }) {
         {state.initiatorPersona && state.roommatePersona && (
           <div className="mt-6 border-t border-line">
             <div className="flex items-center gap-4 px-6 py-2 text-[10px] text-ink-soft">
-              <span className="flex items-center gap-1.5"><span className="inline-block h-2.5 w-2.5 rounded-full bg-ink" /> Person 1</span>
-              <span className="flex items-center gap-1.5"><span className="inline-block h-2.5 w-2.5 rounded-full bg-accent" /> Person 2</span>
+              <span className="flex items-center gap-1.5"><span className="inline-block h-2.5 w-2.5 rounded-full bg-ink" /> {nameA}</span>
+              <span className="flex items-center gap-1.5"><span className="inline-block h-2.5 w-2.5 rounded-full bg-accent" /> {nameB}</span>
             </div>
             {state.initiatorPersona.axes.map((axisA, i) => {
               const axisB = state.roommatePersona!.axes[i];
@@ -177,8 +181,8 @@ export default function ResultsView({ flowId }: { flowId: string }) {
             <thead>
               <tr className="border-b border-line text-left">
                 <th className="px-6 py-2 text-xs font-semibold text-ink-soft w-1/3">Topic</th>
-                <th className="px-4 py-2 text-xs font-semibold text-ink-soft w-1/3">Person 1</th>
-                <th className="px-4 py-2 text-xs font-semibold text-ink-soft w-1/3">Person 2</th>
+                <th className="px-4 py-2 text-xs font-semibold text-ink-soft w-1/3">{nameA}</th>
+                <th className="px-4 py-2 text-xs font-semibold text-ink-soft w-1/3">{nameB}</th>
                 <th className="px-4 py-2 text-xs font-semibold text-ink-soft text-right"></th>
               </tr>
             </thead>

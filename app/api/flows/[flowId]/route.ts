@@ -19,5 +19,7 @@ export async function GET(
     result: status === "completed" ? flow.result : undefined,
     initiatorPersona: status === "completed" ? flow.initiatorPersona : undefined,
     roommatePersona: status === "completed" ? flow.roommatePersona : undefined,
+    initiatorName: status === "completed" ? flow.initiatorName : undefined,
+    roommateName: status === "completed" ? flow.roommateName : undefined,
   });
 }

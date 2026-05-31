@@ -13,8 +13,10 @@ export type MatchingFlow = {
   initiatorInput: string;
   initiatorPersona: Persona;
   initiatorEmail?: string;
+  initiatorName?: string;
   roommateInput?: string;
   roommatePersona?: Persona;
+  roommateName?: string;
   result?: CompatibilityResult;
   resultsReadyAt?: number;
   createdAt: string;

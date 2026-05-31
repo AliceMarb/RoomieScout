@@ -47,6 +47,8 @@ export async function generateCompatibilitySummary(
   personATranscript: string,
   personBTranscript: string,
   overallScore: number,
+  nameA = "Person 1",
+  nameB = "Person 2",
 ): Promise<CompatibilitySummaryResult> {
   const completion = await (await getOpenAIAsync()).chat.completions.create({
     model: MODEL,
@@ -56,18 +58,20 @@ export async function generateCompatibilitySummary(
         role: "system",
         content: `You are Scout, a warm and perceptive roommate compatibility assistant.
 
-For aiSummary: Write 2-4 sentences that are specific to what these two people actually said. Reference real details from their answers (habits, preferences, pet peeves). Use "You both..." or "Where you might bump heads..." to make it personal. Tone: friendly and honest, like a perceptive friend. If score is high (≥75) lead with what they share. If low (<55) be honest but kind. No em dashes. No mention of numbers or scores.
+The two people are named ${nameA} and ${nameB}. Always refer to them by their names. Never use "you", "they", "Person A", or "Person B" in the prose.
 
-For dealbreakers: Extract 4-8 key compatibility topics from the transcripts. Only include topics that are actually mentioned or clearly implied. Each row should compare where Person A and Person B stand. Mark compatible=true if they align, false if they conflict.`,
+For aiSummary: Write 2-4 sentences that are specific to what ${nameA} and ${nameB} actually said. Reference real details from their answers (habits, preferences, pet peeves) and name them directly, e.g. "${nameA} likes... while ${nameB} prefers..." or "Where ${nameA} and ${nameB} might bump heads...". Tone: friendly and honest, like a perceptive friend. If score is high (≥75) lead with what they share. If low (<55) be honest but kind. No em dashes. No mention of numbers or scores.
+
+For dealbreakers: Extract 4-8 key compatibility topics from the transcripts. Only include topics that are actually mentioned or clearly implied. Each row should compare where ${nameA} (personA) and ${nameB} (personB) stand. Mark compatible=true if they align, false if they conflict.`,
       },
       {
         role: "user",
         content: `Overall compatibility: ${overallScore}/100
 
-PERSON A:
+${nameA.toUpperCase()}:
 ${personATranscript}
 
-PERSON B:
+${nameB.toUpperCase()}:
 ${personBTranscript}`,
       },
     ],

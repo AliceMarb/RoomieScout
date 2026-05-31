@@ -1,13 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Button, Input, RuleLabel } from "@/components/ui";
-
-const SHARE_MESSAGE =
-  "Let's find out if we'd make good roommates! Take this quick compatibility test:";
 
 export default function SharePanel({ flowId }: { flowId: string }) {
   const [joinUrl, setJoinUrl] = useState("");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [saved, setSaved] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -18,29 +16,26 @@ export default function SharePanel({ flowId }: { flowId: string }) {
     setJoinUrl(`${window.location.origin}/join/${flowId}`);
   }, [flowId]);
 
-  const shareLinks = useMemo(() => {
-    const text = encodeURIComponent(`${SHARE_MESSAGE} ${joinUrl}`);
-    return {
-      whatsapp: `https://wa.me/?text=${text}`,
-      sms: `sms:?&body=${text}`,
-      email: `mailto:?subject=${encodeURIComponent(
-        "Are we roommate compatible?",
-      )}&body=${text}`,
-    };
-  }, [joinUrl]);
-
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
     setSubmitting(true);
     try {
-      const res = await fetch(`/api/flows/${flowId}/email`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-      const data = (await res.json().catch(() => ({}))) as { error?: string };
-      if (!res.ok) {
+      const [emailRes, nameRes] = await Promise.all([
+        fetch(`/api/flows/${flowId}/email`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        }),
+        fetch(`/api/flows/${flowId}/name`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, role: "initiator" }),
+        }),
+      ]);
+      const failed = !emailRes.ok ? emailRes : !nameRes.ok ? nameRes : null;
+      if (failed) {
+        const data = (await failed.json().catch(() => ({}))) as { error?: string };
         setError(data.error || "Request failed");
         return;
       }
@@ -69,37 +64,31 @@ export default function SharePanel({ flowId }: { flowId: string }) {
           Send the link to a potential roommate — they&apos;ll take the test too.
         </p>
 
-        <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-          <a
-            href={shareLinks.whatsapp}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={shareTile}
-          >
-            💬 WhatsApp
-          </a>
-          <a href={shareLinks.sms} className={shareTile}>
-            📱 Text
-          </a>
-          <a href={shareLinks.email} className={shareTile}>
-            ✉️ Email
-          </a>
-          <button type="button" onClick={copyLink} className={shareTile}>
+        <div className="mt-4 flex gap-2">
+          <Input readOnly value={joinUrl} className="min-w-0 flex-1 bg-paper text-ink-soft" />
+          <button type="button" onClick={copyLink} className={`${shareTile} shrink-0`}>
             {copied ? "✓ Copied" : "🔗 Copy"}
           </button>
         </div>
-
-        <Input readOnly value={joinUrl} className="mt-2 bg-paper text-ink-soft" />
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-3 border-t border-line pt-6">
         <div>
-          <label htmlFor="email" className="block">
+          <label htmlFor="name" className="block">
             <span className="eyebrow">Get notified when results are ready</span>
           </label>
           <p className="mt-1.5 text-xs text-ink-soft">
             We&apos;ll email you once your roommate finishes the test.
           </p>
+          <Input
+            id="name"
+            type="text"
+            required
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Your name"
+            className="mt-2"
+          />
           <div className="mt-2 flex gap-2">
             <Input
               id="email"

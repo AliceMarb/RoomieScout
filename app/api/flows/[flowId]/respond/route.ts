@@ -40,7 +40,13 @@ export async function POST(
   });
 
   // Generate AI summary + dealbreakers in background — updates result once ready
-  generateCompatibilitySummary(flow.initiatorInput, roommateText, result.score)
+  generateCompatibilitySummary(
+    flow.initiatorInput,
+    roommateText,
+    result.score,
+    flow.initiatorName || "Person 1",
+    flow.roommateName || "Person 2",
+  )
     .then(({ aiSummary, dealbreakers }) =>
       updateFlow(flowId, { result: { ...result, aiSummary, dealbreakers } })
     )
