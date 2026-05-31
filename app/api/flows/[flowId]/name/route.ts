@@ -9,7 +9,7 @@ export async function POST(
   { params }: { params: Promise<{ flowId: string }> },
 ) {
   const { flowId } = await params;
-  if (!getFlow(flowId)) {
+  if (!(await getFlow(flowId))) {
     return NextResponse.json({ error: "Flow not found" }, { status: 404 });
   }
 
@@ -26,7 +26,7 @@ export async function POST(
   }
 
   const role = body.role === "roommate" ? "roommate" : "initiator";
-  updateFlow(flowId, role === "roommate" ? { roommateName: name } : { initiatorName: name });
+  await updateFlow(flowId, role === "roommate" ? { roommateName: name } : { initiatorName: name });
 
   return NextResponse.json({ ok: true });
 }
