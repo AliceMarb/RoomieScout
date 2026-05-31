@@ -1,8 +1,9 @@
-import { getOpenAI, MODEL } from "@/lib/openai";
+import { getOpenAIAsync, MODEL } from "@/lib/openai";
 import { formatTranscript } from "./format";
 import { buildPersonaFromAxes } from "@/lib/business-logic";
 import type { Persona } from "@/lib/business-logic";
 import type { Message } from "@/lib/transcriptStore";
+import { weave } from "@/lib/weave";
 
 type HmtiClassification = {
   cleanliness: { pole: "N" | "C"; strength: number };
@@ -51,9 +52,11 @@ Respond ONLY with this JSON (no markdown, no extra text):
 
 const AXIS_LEFT_POLES = ["N", "P", "S", "D"];
 
-export async function classifyPersona(transcript: Message[]): Promise<Persona> {
+export const classifyPersona = weave.op(async function classifyPersona(
+  transcript: Message[],
+): Promise<Persona> {
   try {
-    const completion = await getOpenAI().chat.completions.create({
+    const completion = await (await getOpenAIAsync()).chat.completions.create({
       model: MODEL,
       response_format: { type: "json_object" },
       messages: [
@@ -88,4 +91,4 @@ export async function classifyPersona(transcript: Message[]): Promise<Persona> {
       { chosen: "right", strength: 65 },
     ]);
   }
-}
+});

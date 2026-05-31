@@ -1,4 +1,4 @@
-import { getOpenAI, MODEL } from "@/lib/openai";
+import { getOpenAIAsync, MODEL } from "@/lib/openai";
 
 // ── Output types ─────────────────────────────────────────────────────────────
 
@@ -129,7 +129,7 @@ export async function assessCompatibility(
   personATranscript: string,
   personBTranscript: string,
 ): Promise<CompatibilityResult> {
-  const completion = await getOpenAI().chat.completions.create({
+  const completion = await (await getOpenAIAsync()).chat.completions.create({
     model: MODEL,
     response_format: {
       type: "json_schema",

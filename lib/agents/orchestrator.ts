@@ -1,10 +1,11 @@
-import { getOpenAI, MODEL } from "@/lib/openai";
+import { getOpenAIAsync, MODEL } from "@/lib/openai";
 import { ORCHESTRATOR_PROMPT } from "./prompts";
 import { getSpecialistQuestion } from "./specialist";
 import { formatTranscript } from "./format";
 import type { AgentDomain, InterviewState, OrchestratorDecision } from "./types";
 import { ALL_DOMAINS as DOMAINS } from "./types";
 import type { Message } from "@/lib/transcriptStore";
+import { weave } from "@/lib/weave";
 
 const MAX_TURNS = 12;
 const MAX_QUESTIONS_PER_AGENT = 4;
@@ -30,7 +31,7 @@ function allSatisfied(state: InterviewState): boolean {
   return DOMAINS.every((d) => state.agentStates[d].satisfied);
 }
 
-async function pickDomain(
+const pickDomain = weave.op(async function pickDomain(
   transcript: Message[],
   state: InterviewState,
 ): Promise<OrchestratorDecision> {
@@ -51,7 +52,7 @@ TOTAL TURNS SO FAR: ${state.turnCount}
 Pick the next domain or end the interview.`;
 
   try {
-    const completion = await getOpenAI().chat.completions.create({
+    const completion = await (await getOpenAIAsync()).chat.completions.create({
       model: MODEL,
       response_format: { type: "json_object" },
       messages: [
@@ -87,9 +88,9 @@ Pick the next domain or end the interview.`;
     if (unsatisfied.length === 0) return { done: true };
     return { done: false, domain: unsatisfied[0] };
   }
-}
+});
 
-export async function getNextQuestion(
+export const getNextQuestion = weave.op(async function getNextQuestion(
   transcript: Message[],
   state: InterviewState,
 ): Promise<{ question: string; domain: AgentDomain } | { done: true }> {
@@ -128,4 +129,4 @@ export async function getNextQuestion(
   }
 
   return { question: response.question, domain };
-}
+});

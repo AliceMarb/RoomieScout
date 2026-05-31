@@ -1,7 +1,7 @@
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import type OpenAI from "openai";
-import { getOpenAI } from "@/lib/openai";
+import { getOpenAIAsync } from "@/lib/openai";
 import {
   buildAvatarImagePrompt,
   type AvatarPromptStyle,
@@ -93,7 +93,7 @@ export async function generateAvatarImage(
 
   const style = options.style ?? "cool";
   const prompt = buildAvatarImagePrompt(normalized, style);
-  const openai = getOpenAI();
+  const openai = await getOpenAIAsync();
   const primaryModel = process.env.OPENAI_IMAGE_MODEL ?? DEFAULT_IMAGE_MODEL;
 
   const { b64, model } = await generateImageB64(openai, primaryModel, prompt);

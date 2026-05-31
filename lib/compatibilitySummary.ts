@@ -1,4 +1,4 @@
-import { getOpenAI, MODEL } from "@/lib/openai";
+import { getOpenAIAsync, MODEL } from "@/lib/openai";
 
 export type DealbreakersRow = {
   topic: string;       // e.g. "Smoking", "Pets", "Guest frequency"
@@ -48,7 +48,7 @@ export async function generateCompatibilitySummary(
   personBTranscript: string,
   overallScore: number,
 ): Promise<CompatibilitySummaryResult> {
-  const completion = await getOpenAI().chat.completions.create({
+  const completion = await (await getOpenAIAsync()).chat.completions.create({
     model: MODEL,
     response_format: { type: "json_schema", json_schema: SCHEMA },
     messages: [

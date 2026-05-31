@@ -1,10 +1,11 @@
-import { getOpenAI, MODEL } from "@/lib/openai";
+import { getOpenAIAsync, MODEL } from "@/lib/openai";
 import { getSpecialistPrompt } from "./prompts";
 import { formatTranscript } from "./format";
 import type { AgentDomain, AgentState, SpecialistResponse } from "./types";
 import type { Message } from "@/lib/transcriptStore";
+import { weave } from "@/lib/weave";
 
-export async function getSpecialistQuestion(
+export const getSpecialistQuestion = weave.op(async function getSpecialistQuestion(
   domain: AgentDomain,
   transcript: Message[],
   agentState: AgentState,
@@ -21,7 +22,7 @@ YOUR STATE:
 Generate your next question or signal satisfaction.`;
 
   try {
-    const completion = await getOpenAI().chat.completions.create({
+    const completion = await (await getOpenAIAsync()).chat.completions.create({
       model: MODEL,
       response_format: { type: "json_object" },
       messages: [
@@ -55,4 +56,4 @@ Generate your next question or signal satisfaction.`;
       satisfied: false,
     };
   }
-}
+});
