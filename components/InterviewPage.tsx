@@ -81,16 +81,8 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
   }
 
   async function handleStart() {
-    // No name/ID step — sessions just need a stable key, so mint one.
     const uid = userId.trim() || crypto.randomUUID();
     if (uid !== userId) setUserId(uid);
-
-    try {
-      streamRef.current = await navigator.mediaDevices.getUserMedia({ audio: true });
-    } catch {
-      alert("Microphone access is required.");
-      return;
-    }
 
     setStarted(true);
     setStatus("Starting…");
@@ -141,6 +133,14 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
   }
 
   async function handleRecordStart() {
+    if (!streamRef.current) {
+      try {
+        streamRef.current = await navigator.mediaDevices.getUserMedia({ audio: true });
+      } catch {
+        alert("Microphone access is required for voice input.");
+        return;
+      }
+    }
     audioChunksRef.current = [];
     const recorder = new MediaRecorder(streamRef.current!);
     recorder.ondataavailable = (e) => audioChunksRef.current.push(e.data);
@@ -235,54 +235,51 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
         </button>
       </header>
 
-      {(
-        <div className="flex-1 overflow-y-auto px-4 py-4 pb-32">
-          <div className="mx-auto max-w-xl space-y-3">
-            {transcript.map((msg, i) => {
-              const agentStyle = DEBUG_AGENTS && msg.domain ? domainColors[msg.domain] : null;
+      <div className="flex-1 overflow-y-auto px-4 py-4 pb-32">
+        <div className="mx-auto max-w-xl space-y-3">
+          {transcript.map((msg, i) => {
+            const agentStyle = DEBUG_AGENTS && msg.domain ? domainColors[msg.domain] : null;
 
-              return (
-                <div key={i} className={`flex flex-col ${msg.speaker === "ai" ? "items-start" : "items-end"}`}>
-                  <div className="mb-1 flex items-center gap-2">
-                    <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-                      {msg.speaker === "ai" ? "Scout" : "You"}
+            return (
+              <div key={i} className={`flex flex-col ${msg.speaker === "ai" ? "items-start" : "items-end"}`}>
+                <div className="mb-1 flex items-center gap-2">
+                  <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                    {msg.speaker === "ai" ? "Scout" : "You"}
+                  </span>
+                  {agentStyle && (
+                    <span className={`rounded-full px-2 py-0.5 text-[9px] font-semibold ${agentStyle.badge}`}>
+                      {agentStyle.label}
                     </span>
-                    {agentStyle && (
-                      <span className={`rounded-full px-2 py-0.5 text-[9px] font-semibold ${agentStyle.badge}`}>
-                        {agentStyle.label}
-                      </span>
-                    )}
-                  </div>
-                  <div className={[
-                    "max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
-                    msg.speaker === "ai"
-                      ? `rounded-bl-sm bg-white text-slate-800 border-2 ${agentStyle ? agentStyle.border : "border-slate-200"}`
-                      : "rounded-br-sm bg-slate-900 text-white",
-                  ].join(" ")}>
-                    {msg.text}
-                  </div>
+                  )}
                 </div>
-              );
-            })}
-
-            {scoutThinking && (
-              <div className="flex flex-col items-start">
-                <span className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Scout</span>
-                <div className="flex items-center gap-1 rounded-2xl rounded-bl-sm border border-slate-200 bg-white px-4 py-3">
-                  <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.3s]" />
-                  <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.15s]" />
-                  <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400" />
+                <div className={[
+                  "max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
+                  msg.speaker === "ai"
+                    ? `rounded-bl-sm bg-white text-slate-800 border-2 ${agentStyle ? agentStyle.border : "border-slate-200"}`
+                    : "rounded-br-sm bg-slate-900 text-white",
+                ].join(" ")}>
+                  {msg.text}
                 </div>
               </div>
-            )}
+            );
+          })}
 
-            <div ref={bottomRef} />
-          </div>
+          {scoutThinking && (
+            <div className="flex flex-col items-start">
+              <span className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Scout</span>
+              <div className="flex items-center gap-1 rounded-2xl rounded-bl-sm border border-slate-200 bg-white px-4 py-3">
+                <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.3s]" />
+                <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.15s]" />
+                <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400" />
+              </div>
+            </div>
+          )}
+
+          <div ref={bottomRef} />
         </div>
-      )}
+      </div>
 
-      {(
-        <div className="fixed bottom-0 left-0 right-0 border-t border-slate-200 bg-white px-4 py-3 shadow-md">
+      <div className="fixed bottom-0 left-0 right-0 border-t border-slate-200 bg-white px-4 py-3 shadow-md">
           <div className="mx-auto flex max-w-xl items-center gap-2">
             <input
               className="flex-1 rounded-full border border-slate-300 px-4 py-2 text-sm focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 disabled:opacity-40"
@@ -323,7 +320,6 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
           </div>
           <p className="mt-1.5 text-center text-xs text-slate-400">{status}</p>
         </div>
-      )}
 
       <audio ref={playerRef} className="hidden" />
     </main>
