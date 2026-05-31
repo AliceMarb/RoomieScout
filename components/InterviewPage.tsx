@@ -33,7 +33,7 @@ type RespondResponse = {
   redirectTo?: string;
 };
 
-type OrbState = "idle" | "speaking" | "listening" | "transcribing" | "thinking" | "done";
+type OrbState = "ready" | "idle" | "speaking" | "listening" | "transcribing" | "thinking" | "done";
 
 export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
   const router = useRouter();
@@ -62,15 +62,13 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [transcript, done, scoutThinking]);
 
-  const startedRef = useRef(false);
-  useEffect(() => {
-    if (startedRef.current) return;
-    startedRef.current = true;
+  function handleTapToStart() {
+    if (started) return;
     handleStart();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }
 
   const orbState: OrbState =
+    !started ? "ready" :
     done ? "done" :
     recording ? "listening" :
     transcribing ? "transcribing" :
@@ -85,10 +83,7 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
     if (speaker === "ai") setLastAiMessage(text);
   }
 
-  const hasInteractedRef = useRef(false);
-
   function playBase64Audio(b64: string): Promise<void> {
-    if (!hasInteractedRef.current) return Promise.resolve();
     return new Promise((resolve, reject) => {
       const audio = playerRef.current!;
       audio.onended = () => resolve();
@@ -164,7 +159,6 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
   }
 
   async function handleRecordStart() {
-    hasInteractedRef.current = true;
     if (!streamRef.current) {
       try {
         streamRef.current = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -217,7 +211,6 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
   }
 
   async function handleTextSubmit() {
-    hasInteractedRef.current = true;
     const text = textInput.trim();
     if (!text || !canRecord) return;
     setTextInput("");
@@ -263,6 +256,7 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
   const recordDisabled = done || !canRecord;
 
   const statusText: Record<OrbState, string> = {
+    ready: "Tap to start",
     idle: canRecord ? "Hold to talk" : "Starting...",
     speaking: "Scout is speaking",
     listening: "Listening...",
@@ -339,6 +333,7 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
             <button
               className={cn(
                 "relative flex h-40 w-40 items-center justify-center rounded-full transition-all duration-500 sm:h-48 sm:w-48",
+                orbState === "ready" && "cursor-pointer border-2 border-teal/25 bg-teal-soft hover:border-teal/40 active:scale-95",
                 orbState === "idle" && canRecord && "cursor-pointer border-2 border-teal/25 bg-teal-soft active:scale-95",
                 orbState === "idle" && !canRecord && "cursor-not-allowed border-2 border-line bg-surface/60",
                 orbState === "speaking" && "cursor-default border-2 border-teal/30 bg-teal-soft",
@@ -351,9 +346,13 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
                 ...(orbState === "speaking" ? { animation: "orb-pulse 2.5s ease-in-out infinite" } : {}),
                 ...(orbState === "listening" ? { animation: "orb-glow 1.5s ease-in-out infinite" } : {}),
                 ...(orbState === "idle" && canRecord ? { animation: "orb-breathe 4s ease-in-out infinite" } : {}),
+                ...(orbState === "ready" ? { animation: "orb-breathe 4s ease-in-out infinite" } : {}),
                 touchAction: "none",
               }}
               disabled={orbState === "done"}
+              onClick={() => {
+                if (orbState === "ready") handleTapToStart();
+              }}
               onMouseDown={() => {
                 if (canRecord && orbState === "idle") handleRecordStart();
               }}
@@ -362,6 +361,7 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
               }}
               onTouchStart={(e) => {
                 e.preventDefault();
+                if (orbState === "ready") { handleTapToStart(); return; }
                 if (canRecord && orbState === "idle") handleRecordStart();
               }}
               onTouchEnd={(e) => {
