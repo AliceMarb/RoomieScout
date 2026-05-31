@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { DEBUG_AGENTS } from "@/lib/config";
+import { SCOUT_INTRO } from "@/lib/interview";
 import { Wordmark, cn } from "@/components/ui";
 
 type Message = { speaker: "ai" | "user"; text: string; domain?: string };
@@ -297,10 +298,13 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
         </header>
 
         <div className="flex flex-1 flex-col items-center justify-center px-6">
-          {/* Last AI message */}
-          <div className="mb-10 min-h-[3rem] max-w-sm text-center">
+          {/* Intro + current question */}
+          <div className="mb-10 max-w-sm text-center">
+            <p className="text-xs leading-relaxed text-ink-faint">
+              {SCOUT_INTRO}
+            </p>
             {lastAiMessage && (
-              <p className="text-sm leading-relaxed text-ink-soft transition-opacity duration-500">
+              <p className="mt-4 text-sm font-medium leading-relaxed text-ink transition-opacity duration-500">
                 {lastAiMessage}
               </p>
             )}
