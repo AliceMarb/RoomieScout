@@ -1,7 +1,9 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import type { CompatibilityResult, Persona } from "@/lib/business-logic";
+import { getAvatarPublicPath } from "@/lib/avatar-paths";
 import { Card } from "@/components/ui";
 
 type FlowState = {
@@ -12,11 +14,19 @@ type FlowState = {
 };
 
 function PersonaCard({ persona, label }: { persona: Persona; label: string }) {
+  const avatarSrc = getAvatarPublicPath(persona.code);
   return (
     <div className="flex-1 rounded-xl border border-line bg-surface p-4">
       <p className="eyebrow">{label}</p>
-      <div className="mt-2 flex items-center gap-2">
-        <span className="text-2xl">{persona.emoji}</span>
+      <div className="mt-2 flex items-center gap-3">
+        <Image
+          src={avatarSrc}
+          alt={persona.title}
+          width={52}
+          height={52}
+          className="rounded-full object-cover"
+          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+        />
         <div>
           <p className="font-display text-lg font-bold text-ink">{persona.code}</p>
           <p className="text-xs font-medium text-ink-soft">{persona.title}</p>
@@ -118,7 +128,7 @@ export default function ResultsView({ flowId }: { flowId: string }) {
     );
   }
 
-  const { score, categories, summary } = state.result;
+  const { score, categories, summary, aiSummary, dealbreakers } = state.result;
   const matchBand =
     score >= 85 ? "Excellent Match" :
     score >= 70 ? "Strong Match" :
@@ -148,7 +158,12 @@ export default function ResultsView({ flowId }: { flowId: string }) {
               <p className="mt-0.5 text-xs font-medium text-ink-soft">{matchBand}</p>
             </div>
           </div>
-          <p className="mt-3 text-sm leading-relaxed text-ink-soft">{summary}</p>
+          {/* AI-generated specific summary */}
+          {aiSummary ? (
+            <p className="mt-3 text-sm leading-relaxed text-ink">{aiSummary}</p>
+          ) : (
+            <p className="mt-3 text-sm leading-relaxed text-ink-soft">{summary}</p>
+          )}
         </div>
 
         <div className="mt-6 border-t border-line">
@@ -165,6 +180,37 @@ export default function ResultsView({ flowId }: { flowId: string }) {
           ))}
         </div>
       </Card>
+
+      {/* Dealbreakers alignment table */}
+      {dealbreakers && dealbreakers.length > 0 && (
+        <Card className="overflow-hidden">
+          <div className="px-6 pt-6 pb-2">
+            <span className="eyebrow">Key compatibility points</span>
+          </div>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-line text-left">
+                <th className="px-6 py-2 text-xs font-semibold text-ink-soft w-1/3">Topic</th>
+                <th className="px-4 py-2 text-xs font-semibold text-ink-soft w-1/3">Person 1</th>
+                <th className="px-4 py-2 text-xs font-semibold text-ink-soft w-1/3">Person 2</th>
+                <th className="px-4 py-2 text-xs font-semibold text-ink-soft text-right"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {dealbreakers.map((row, i) => (
+                <tr key={i} className="border-b border-line last:border-b-0">
+                  <td className="px-6 py-3 font-medium text-ink">{row.topic}</td>
+                  <td className="px-4 py-3 text-ink-soft">{row.personA}</td>
+                  <td className="px-4 py-3 text-ink-soft">{row.personB}</td>
+                  <td className="px-4 py-3 text-right text-base">
+                    {row.compatible ? "✅" : "❌"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Card>
+      )}
 
       {state.initiatorPersona && state.roommatePersona && (
         <Card className="overflow-hidden">

@@ -1,8 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import { useState } from "react";
 import JoinForm from "@/components/JoinForm";
 import type { Persona } from "@/lib/business-logic";
+import { getAvatarPublicPath } from "@/lib/avatar-paths";
 
 function firstName(email?: string): string {
   if (!email) return "Your potential roommate";
@@ -22,6 +24,7 @@ export default function JoinIntro({
 }) {
   const [open, setOpen] = useState(true);
   const senderName = firstName(initiatorEmail);
+  const avatarSrc = getAvatarPublicPath(initiatorPersona.code);
 
   return (
     <>
@@ -33,13 +36,20 @@ export default function JoinIntro({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm" onClick={() => setOpen(false)}>
           <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-2xl text-center" onClick={(e) => e.stopPropagation()}>
 
-            {/* Sender badge */}
-            <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-4 py-1.5 text-sm text-slate-600">
-              <span className="text-lg">{initiatorPersona.emoji}</span>
-              <span>
+            {/* Sender avatar + badge */}
+            <div className="flex flex-col items-center gap-2">
+              <Image
+                src={avatarSrc}
+                alt={initiatorPersona.title}
+                width={72}
+                height={72}
+                className="rounded-full object-cover ring-2 ring-slate-200"
+                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+              />
+              <div className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-600">
                 <span className="font-semibold text-slate-900">{senderName}</span>
-                {" "}sent you a roommate test
-              </span>
+                {" · "}{initiatorPersona.title}
+              </div>
             </div>
 
             {/* Headline */}

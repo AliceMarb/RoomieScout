@@ -1,7 +1,11 @@
+import type { DealbreakersRow } from "@/lib/compatibilitySummary";
+
 export type CompatibilityResult = {
   score: number; // 0-100 overall compatibility
   categories: { name: string; score: number }[];
   summary: string;
+  aiSummary?: string;
+  dealbreakers?: DealbreakersRow[];
 };
 
 export type PersonaAxis = {

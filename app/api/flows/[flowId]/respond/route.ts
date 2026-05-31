@@ -3,6 +3,7 @@ import { computeCompatibility, computePersona } from "@/lib/business-logic";
 import type { Persona } from "@/lib/business-logic";
 import { getFlow, updateFlow } from "@/lib/store";
 import { sendResultsEmail } from "@/lib/email";
+import { generateCompatibilitySummary } from "@/lib/compatibilitySummary";
 
 const PROCESSING_DELAY_MS = 2500;
 
@@ -28,13 +29,22 @@ export async function POST(
     return NextResponse.json({ error: "text or persona is required" }, { status: 400 });
   }
 
+  const roommateText = typeof body.text === "string" ? body.text.trim() : "";
   const result = computeCompatibility(flow.initiatorPersona, roommatePersona);
+
   updateFlow(flowId, {
-    roommateInput: typeof body.text === "string" ? body.text.trim() : "",
+    roommateInput: roommateText,
     roommatePersona,
     result,
     resultsReadyAt: Date.now() + PROCESSING_DELAY_MS,
   });
+
+  // Generate AI summary + dealbreakers in background — updates result once ready
+  generateCompatibilitySummary(flow.initiatorInput, roommateText, result.score)
+    .then(({ aiSummary, dealbreakers }) =>
+      updateFlow(flowId, { result: { ...result, aiSummary, dealbreakers } })
+    )
+    .catch((err) => console.error("[summary] Failed:", err));
 
   const emailStatus = flow.initiatorEmail ? `sending to ${flow.initiatorEmail}` : "no email saved";
   if (flow.initiatorEmail) {
