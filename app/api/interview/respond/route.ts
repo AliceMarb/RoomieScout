@@ -3,6 +3,9 @@ import { SCOUT_CLOSING } from "@/lib/interview";
 import { getSession, appendMessage, advanceQuestion } from "@/lib/transcriptStore";
 import { speechToText, textToSpeech } from "@/lib/elevenlabs";
 import { getNextQuestion, classifyPersona } from "@/lib/agents";
+import { createFlowFromInterview, getFlow, updateFlow } from "@/lib/store";
+import { computeCompatibility } from "@/lib/business-logic";
+import { formatTranscript } from "@/lib/agents/format";
 
 export async function POST(req: Request) {
   try {
@@ -42,10 +45,31 @@ export async function POST(req: Request) {
     if ("done" in result) {
       appendMessage(userId, "ai", SCOUT_CLOSING);
 
-      const [closingAudio, personaResult] = await Promise.all([
+      const [closingAudio, persona] = await Promise.all([
         tts ? textToSpeech(SCOUT_CLOSING) : Promise.resolve(null),
         classifyPersona(session.transcript),
       ]);
+
+      const transcriptText = formatTranscript(session.transcript);
+      const flowId = session.flowId;
+      let redirectTo: string;
+
+      if (flowId) {
+        const flow = getFlow(flowId);
+        if (flow) {
+          const compat = computeCompatibility(flow.initiatorPersona, persona);
+          updateFlow(flowId, {
+            roommateInput: transcriptText,
+            roommatePersona: persona,
+            result: compat,
+            resultsReadyAt: Date.now() + 2500,
+          });
+        }
+        redirectTo = `/results/${flowId}`;
+      } else {
+        const flow = createFlowFromInterview(transcriptText, persona);
+        redirectTo = `/share/${flow.id}`;
+      }
 
       return NextResponse.json({
         done: true,
@@ -53,7 +77,9 @@ export async function POST(req: Request) {
         question: SCOUT_CLOSING,
         userTranscript: userText,
         audio: closingAudio ? closingAudio.toString("base64") : null,
-        personas: personaResult.personas,
+        persona,
+        flowId: flowId ?? redirectTo.split("/").pop(),
+        redirectTo,
       });
     }
 

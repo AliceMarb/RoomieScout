@@ -6,13 +6,13 @@ import { createInitialInterviewState, getNextQuestion } from "@/lib/agents";
 
 export async function POST(req: Request) {
   try {
-    const { userId, tts } = (await req.json()) as { userId?: string; tts?: boolean };
+    const { userId, flowId, tts } = (await req.json()) as { userId?: string; flowId?: string; tts?: boolean };
     if (!userId) {
       return NextResponse.json({ error: "userId is required" }, { status: 400 });
     }
 
     const interviewState = createInitialInterviewState();
-    const session = createSession(userId, interviewState);
+    const session = createSession(userId, interviewState, flowId);
 
     const result = await getNextQuestion(session.transcript, interviewState);
 
