@@ -26,7 +26,7 @@ export function Wordmark() {
     <Link href="/" className="inline-flex items-center gap-2">
       <span className="h-2.5 w-2.5 rounded-sm bg-accent" />
       <span className="font-display text-sm font-semibold tracking-tight text-ink">
-        RoomieScout
+        Homi
       </span>
     </Link>
   );

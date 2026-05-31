@@ -283,7 +283,7 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
         <header className="relative z-10 shrink-0 px-5 pt-8 pb-4 text-center">
           <div className="inline-flex items-center gap-2.5">
             <span className="h-3 w-3 rounded-sm bg-teal" />
-            <h1 className="font-display text-xl font-bold tracking-tight text-ink">RoomieScout</h1>
+            <h1 className="font-display text-xl font-bold tracking-tight text-ink">Homi</h1>
           </div>
           <p className="mx-auto mt-2 max-w-[260px] text-[13px] leading-snug text-ink-soft">
             A quick voice chat to find your perfect roommate match
