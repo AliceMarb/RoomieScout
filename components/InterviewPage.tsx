@@ -38,6 +38,7 @@ export default function InterviewPage() {
   const [userId, setUserId] = useState(DEFAULT_USER_ID);
   const [textInput, setTextInput] = useState("");
   const [ttsEnabled, setTtsEnabled] = useState(false);
+  const [scoutThinking, setScoutThinking] = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -108,6 +109,7 @@ export default function InterviewPage() {
   }
 
   async function afterRespond(data: RespondResponse) {
+    setScoutThinking(false);
     if (data.userTranscript) addMessage("user", data.userTranscript);
 
     if (data.done) {
@@ -163,9 +165,11 @@ export default function InterviewPage() {
         body: formData,
       });
       setTranscribing(false);
+      setScoutThinking(true);
       await afterRespond(data);
     } catch (err) {
       setTranscribing(false);
+      setScoutThinking(false);
       setStatus(`Error: ${(err as Error).message}`);
       setCanRecord(true);
     }
@@ -176,6 +180,7 @@ export default function InterviewPage() {
     if (!text || !canRecord) return;
     setTextInput("");
     setCanRecord(false);
+    setScoutThinking(true);
     setStatus("Sending…");
 
     try {
@@ -186,6 +191,7 @@ export default function InterviewPage() {
       });
       await afterRespond(data);
     } catch (err) {
+      setScoutThinking(false);
       setStatus(`Error: ${(err as Error).message}`);
       setCanRecord(true);
     }
@@ -260,6 +266,17 @@ export default function InterviewPage() {
                 </div>
               );
             })}
+
+            {scoutThinking && (
+              <div className="flex flex-col items-start">
+                <span className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Scout</span>
+                <div className="flex items-center gap-1 rounded-2xl rounded-bl-sm border border-slate-200 bg-white px-4 py-3">
+                  <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.3s]" />
+                  <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.15s]" />
+                  <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400" />
+                </div>
+              </div>
+            )}
 
             {done && personas.length > 0 && (
               <div className="mt-10">
