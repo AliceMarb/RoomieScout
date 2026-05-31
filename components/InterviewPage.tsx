@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { DEBUG_AGENTS } from "@/lib/config";
 import { Wordmark, cn } from "@/components/ui";
 
@@ -363,9 +364,9 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
               ) : orbState === "done" ? (
                 <span className="font-display text-5xl font-bold text-paper/90">{"✓"}</span>
               ) : orbState === "listening" ? (
-                <span className="font-display text-5xl font-bold text-paper/90">U</span>
+                <Image src="/user-avatar.svg" alt="You" width={80} height={80} className="opacity-90" />
               ) : (
-                <span className="font-display text-5xl font-bold text-paper/90">S</span>
+                <Image src="/scout-avatar.png" alt="Scout" width={96} height={96} className="rounded-full" />
               )}
             </button>
           </div>
