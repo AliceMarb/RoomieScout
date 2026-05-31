@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { SCOUT_INTRO, INTERVIEW_QUESTIONS } from "@/lib/interview";
+import { SCOUT_INTRO } from "@/lib/interview";
 import { createSession, appendMessage } from "@/lib/transcriptStore";
 import { textToSpeech } from "@/lib/elevenlabs";
+import { createInitialInterviewState, getNextQuestion } from "@/lib/agents";
 
 export async function POST(req: Request) {
   try {
@@ -10,18 +11,24 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "userId is required" }, { status: 400 });
     }
 
-    createSession(userId);
-    const firstQuestion = INTERVIEW_QUESTIONS[0];
+    const interviewState = createInitialInterviewState();
+    const session = createSession(userId, interviewState);
+
+    const result = await getNextQuestion(session.transcript, interviewState);
+
+    if ("done" in result) {
+      return NextResponse.json({ error: "Failed to generate opening question" }, { status: 500 });
+    }
 
     appendMessage(userId, "ai", SCOUT_INTRO);
-    appendMessage(userId, "ai", firstQuestion);
+    appendMessage(userId, "ai", result.question);
 
-    const audioBuffer = await textToSpeech(`${SCOUT_INTRO} ${firstQuestion}`);
+    const audioBuffer = await textToSpeech(`${SCOUT_INTRO} ${result.question}`);
 
     return NextResponse.json({
       intro: SCOUT_INTRO,
       questionIndex: 0,
-      question: firstQuestion,
+      question: result.question,
       audio: audioBuffer ? audioBuffer.toString("base64") : null,
       done: false,
     });

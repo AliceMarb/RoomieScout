@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { INTERVIEW_QUESTIONS } from "@/lib/interview";
+import { SCOUT_CLOSING } from "@/lib/interview";
 import { getSession, appendMessage, advanceQuestion } from "@/lib/transcriptStore";
 import { speechToText, textToSpeech } from "@/lib/elevenlabs";
+import { getNextQuestion } from "@/lib/agents";
 
 export async function POST(req: Request) {
   try {
@@ -29,21 +30,30 @@ export async function POST(req: Request) {
     const userText = await speechToText(audioBuffer, audioFile.type || "audio/webm");
 
     appendMessage(userId, "user", userText);
-    advanceQuestion(userId);
 
-    const nextIndex = session.currentQuestionIndex;
+    const result = await getNextQuestion(session.transcript, session.interviewState);
 
-    if (nextIndex >= INTERVIEW_QUESTIONS.length) {
-      return NextResponse.json({ done: true, transcript: session.transcript });
+    if ("done" in result) {
+      appendMessage(userId, "ai", SCOUT_CLOSING);
+      const closingAudio = await textToSpeech(SCOUT_CLOSING);
+
+      return NextResponse.json({
+        done: true,
+        transcript: session.transcript,
+        question: SCOUT_CLOSING,
+        userTranscript: userText,
+        audio: closingAudio ? closingAudio.toString("base64") : null,
+      });
     }
 
-    const nextQuestion = INTERVIEW_QUESTIONS[nextIndex];
-    appendMessage(userId, "ai", nextQuestion);
-    const questionAudio = await textToSpeech(nextQuestion);
+    appendMessage(userId, "ai", result.question);
+    advanceQuestion(userId);
+
+    const questionAudio = await textToSpeech(result.question);
 
     return NextResponse.json({
-      questionIndex: nextIndex,
-      question: nextQuestion,
+      questionIndex: session.currentQuestionIndex,
+      question: result.question,
       userTranscript: userText,
       audio: questionAudio ? questionAudio.toString("base64") : null,
       done: false,
