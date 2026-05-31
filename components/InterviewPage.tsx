@@ -85,7 +85,10 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
     if (speaker === "ai") setLastAiMessage(text);
   }
 
+  const hasInteractedRef = useRef(false);
+
   function playBase64Audio(b64: string): Promise<void> {
+    if (!hasInteractedRef.current) return Promise.resolve();
     return new Promise((resolve, reject) => {
       const audio = playerRef.current!;
       audio.onended = () => resolve();
@@ -161,6 +164,7 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
   }
 
   async function handleRecordStart() {
+    hasInteractedRef.current = true;
     if (!streamRef.current) {
       try {
         streamRef.current = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -213,6 +217,7 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
   }
 
   async function handleTextSubmit() {
+    hasInteractedRef.current = true;
     const text = textInput.trim();
     if (!text || !canRecord) return;
     setTextInput("");
