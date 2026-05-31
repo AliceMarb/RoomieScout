@@ -267,78 +267,86 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
     done: "All done. Redirecting...",
   };
 
+  const maxTurns = 7;
+
   // ── Voice mode ──────────────────────────────────────────────
 
   if (mode === "voice") {
     return (
-      <main className="flex h-dvh flex-col bg-paper bg-grid">
-        <header className="shrink-0 px-5 pt-6 pb-2 text-center">
-          <h1 className="font-display text-2xl font-bold tracking-tight text-ink">RoomieScout</h1>
-          <p className="mx-auto mt-2 max-w-xs text-sm leading-snug text-ink-soft">
-            A quick voice chat to find your perfect roommate match. Just be yourself.
-          </p>
-          <div className="mt-3 flex items-center justify-center gap-3">
-            <button
-              onClick={() => {
-                if (!ttsEnabled && !window.confirm("This uses ElevenLabs credits. Only turn on with intention — turn off when done testing.")) return;
-                setTtsEnabled((v) => !v);
-              }}
-              title={ttsEnabled ? "Voice on — click to mute" : "Voice off (saves API credits)"}
-              className={cn(
-                "text-lg transition-opacity",
-                ttsEnabled ? "opacity-100" : "opacity-30",
-              )}
-            >
-              {ttsEnabled ? "\u{1F50A}" : "\u{1F507}"}
-            </button>
-            <button
-              onClick={handleModeToggle}
-              className="eyebrow rounded-md px-2.5 py-1.5 transition-colors hover:bg-ink/5"
-            >
-              Chat
-            </button>
+      <main className="relative flex h-dvh flex-col overflow-hidden bg-paper">
+        {/* Ambient background */}
+        <div className="pointer-events-none absolute inset-0 bg-grid opacity-40" />
+        <div className={cn(
+          "pointer-events-none absolute inset-0 transition-all duration-700",
+          orbState === "listening" || orbState === "speaking" ? "orb-spotlight-active" : "orb-spotlight",
+        )} />
+
+        {/* Header */}
+        <header className="relative z-10 shrink-0 px-5 pt-8 pb-4 text-center">
+          <div className="inline-flex items-center gap-2.5">
+            <span className="h-3 w-3 rounded-sm bg-teal" />
+            <h1 className="font-display text-xl font-bold tracking-tight text-ink">RoomieScout</h1>
           </div>
+          <p className="mx-auto mt-2 max-w-[260px] text-[13px] leading-snug text-ink-soft">
+            A quick voice chat to find your perfect roommate match
+          </p>
         </header>
 
-        <div className="flex flex-1 flex-col items-center justify-center px-6">
+        {/* Center stage */}
+        <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-6">
           {/* Current question */}
-          <div className="mb-10 min-h-[2rem] max-w-sm text-center">
+          <div className="mb-8 min-h-[2.5rem] max-w-xs text-center sm:mb-10">
             {lastAiMessage && (
-              <p className="text-sm font-medium leading-relaxed text-ink transition-opacity duration-500">
-                {lastAiMessage}
+              <p className="text-[15px] font-medium leading-relaxed text-ink/90 transition-opacity duration-500">
+                &ldquo;{lastAiMessage}&rdquo;
               </p>
             )}
           </div>
 
-          {/* The orb */}
+          {/* Orb container with concentric rings */}
           <div className="relative flex items-center justify-center">
+            {/* Decorative static rings */}
+            <span className="absolute h-56 w-56 rounded-full border border-teal/[0.07] sm:h-64 sm:w-64" />
+            <span className="absolute h-72 w-72 rounded-full border border-teal/[0.04] sm:h-80 sm:w-80" />
+
+            {/* Animated ripple rings */}
             {(orbState === "speaking" || orbState === "listening") && (
-              <span
-                className={cn(
-                  "absolute rounded-full",
-                  orbState === "listening" ? "bg-ink/20" : "bg-ink/10",
-                )}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  animation: "orb-ring 1.5s ease-out infinite",
-                }}
-              />
+              <>
+                <span
+                  className="absolute rounded-full border-2 border-teal/30"
+                  style={{
+                    width: "160px",
+                    height: "160px",
+                    animation: "orb-ring 2s ease-out infinite",
+                  }}
+                />
+                <span
+                  className="absolute rounded-full border border-teal/20"
+                  style={{
+                    width: "160px",
+                    height: "160px",
+                    animation: "orb-ring-2 2.5s ease-out infinite 0.4s",
+                  }}
+                />
+              </>
             )}
+
+            {/* The orb */}
             <button
               className={cn(
-                "relative flex h-40 w-40 items-center justify-center rounded-full border-2 transition-all duration-300 sm:h-48 sm:w-48",
-                orbState === "idle" && canRecord && "border-line bg-surface cursor-pointer shadow-lg hover:shadow-xl active:scale-95",
-                orbState === "idle" && !canRecord && "border-line/40 bg-surface/40 cursor-not-allowed",
-                orbState === "speaking" && "border-ink/20 bg-surface cursor-default",
-                orbState === "listening" && "border-ink bg-ink cursor-pointer ring-4 ring-ink/20",
-                orbState === "transcribing" && "border-line bg-surface/60 animate-pulse cursor-not-allowed",
-                orbState === "thinking" && "border-line bg-surface/60 cursor-not-allowed",
-                orbState === "done" && "border-ink/20 bg-surface cursor-default",
+                "relative flex h-40 w-40 items-center justify-center rounded-full transition-all duration-500 sm:h-48 sm:w-48",
+                orbState === "idle" && canRecord && "cursor-pointer border-2 border-teal/25 bg-teal-soft active:scale-95",
+                orbState === "idle" && !canRecord && "cursor-not-allowed border-2 border-line bg-surface/60",
+                orbState === "speaking" && "cursor-default border-2 border-teal/30 bg-teal-soft",
+                orbState === "listening" && "cursor-pointer border-2 border-teal bg-teal",
+                orbState === "transcribing" && "cursor-not-allowed border-2 border-teal/20 bg-teal-soft animate-pulse",
+                orbState === "thinking" && "cursor-not-allowed border-2 border-teal/20 bg-teal-soft",
+                orbState === "done" && "cursor-default border-2 border-teal/30 bg-teal-soft",
               )}
               style={{
-                ...(orbState === "speaking" ? { animation: "orb-pulse 2s ease-in-out infinite" } : {}),
+                ...(orbState === "speaking" ? { animation: "orb-pulse 2.5s ease-in-out infinite" } : {}),
                 ...(orbState === "listening" ? { animation: "orb-glow 1.5s ease-in-out infinite" } : {}),
+                ...(orbState === "idle" && canRecord ? { animation: "orb-breathe 4s ease-in-out infinite" } : {}),
                 touchAction: "none",
               }}
               disabled={orbState === "done"}
@@ -359,28 +367,63 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
               aria-label={statusText[orbState]}
             >
               {orbState === "thinking" ? (
-                <div className="flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-ink/50 [animation-delay:-0.3s]" />
-                  <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-ink/50 [animation-delay:-0.15s]" />
-                  <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-ink/50" />
+                <div className="flex items-center gap-2">
+                  <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-teal/60 [animation-delay:-0.3s]" />
+                  <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-teal/60 [animation-delay:-0.15s]" />
+                  <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-teal/60" />
                 </div>
               ) : orbState === "done" ? (
-                <span className="font-display text-5xl font-bold text-ink/80">{"✓"}</span>
+                <span className="font-display text-5xl font-bold text-teal">{"✓"}</span>
               ) : orbState === "listening" ? (
                 <Image src="/user-avatar.svg" alt="You" width={80} height={80} className="opacity-90" />
               ) : (
-                <Image src="/scout-avatar.png" alt="Scout" width={96} height={96} className="rounded-full" />
+                <Image src="/scout-avatar.png" alt="Scout" width={100} height={100} className="rounded-full" />
               )}
             </button>
           </div>
 
-          {/* Status + progress */}
-          <div className="mt-8 text-center">
-            <p className="eyebrow" aria-live="polite">{statusText[orbState]}</p>
-            {turnCount > 0 && !done && (
-              <p className="eyebrow mt-2 text-ink-faint/60">Turn {turnCount}</p>
-            )}
+          {/* Status */}
+          <div className="mt-8 text-center sm:mt-10">
+            <p className="eyebrow text-teal/70" aria-live="polite">{statusText[orbState]}</p>
           </div>
+
+          {/* Progress dots */}
+          {!done && turnCount > 0 && (
+            <div className="mt-4 flex items-center gap-1.5">
+              {Array.from({ length: maxTurns }).map((_, i) => (
+                <span
+                  key={i}
+                  className={cn(
+                    "h-1.5 rounded-full transition-all duration-300",
+                    i < turnCount ? "w-4 bg-teal/50" : "w-1.5 bg-line",
+                  )}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Bottom controls */}
+        <div className="relative z-10 flex items-center justify-center gap-4 px-5 pb-6">
+          <button
+            onClick={() => {
+              if (!ttsEnabled && !window.confirm("This uses ElevenLabs credits. Only turn on with intention — turn off when done testing.")) return;
+              setTtsEnabled((v) => !v);
+            }}
+            title={ttsEnabled ? "Voice on — click to mute" : "Voice off (saves API credits)"}
+            className={cn(
+              "rounded-full border border-line bg-surface/80 px-3 py-1.5 text-sm backdrop-blur-sm transition-all",
+              ttsEnabled ? "text-ink-soft" : "text-ink-faint",
+            )}
+          >
+            {ttsEnabled ? "\u{1F50A}" : "\u{1F507}"}
+          </button>
+          <button
+            onClick={handleModeToggle}
+            className="rounded-full border border-line bg-surface/80 px-4 py-1.5 text-xs font-medium uppercase tracking-eyebrow text-ink-soft backdrop-blur-sm transition-all hover:bg-surface"
+          >
+            Chat
+          </button>
         </div>
 
         <audio ref={playerRef} className="hidden" />

@@ -26,6 +26,10 @@ const config: Config = {
           ink: "rgb(var(--accent-ink) / <alpha-value>)",
           soft: "rgb(var(--accent-soft) / <alpha-value>)",
         },
+        teal: {
+          DEFAULT: "rgb(var(--teal) / <alpha-value>)",
+          soft: "rgb(var(--teal-soft) / <alpha-value>)",
+        },
       },
       fontFamily: {
         display: ["var(--font-display)", "ui-sans-serif", "system-ui", "sans-serif"],

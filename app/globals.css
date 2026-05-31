@@ -18,6 +18,8 @@
   --accent: 255 107 90; /* warm coral */
   --accent-ink: 209 60 43; /* coral, text-safe on paper */
   --accent-soft: 255 237 233; /* coral tint background */
+  --teal: 45 79 79; /* scout brand teal */
+  --teal-soft: 220 235 232; /* teal tint background */
 
   --font-display: "Space Grotesk", sans-serif;
   --font-sans: "Inter", sans-serif;
@@ -72,25 +74,49 @@
 }
 
 /* ── Voice orb animations ─────────────────────────────────── */
+@keyframes orb-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow:
+      0 0 0 0 rgb(var(--teal) / 0),
+      0 8px 32px -4px rgb(var(--teal) / 0.12);
+  }
+  50% {
+    transform: scale(1.03);
+    box-shadow:
+      0 0 0 8px rgb(var(--teal) / 0.06),
+      0 12px 40px -4px rgb(var(--teal) / 0.18);
+  }
+}
+
 @keyframes orb-pulse {
   0%,
   100% {
     transform: scale(1);
-    box-shadow: 0 0 0 0 rgb(var(--ink) / 0.15);
+    box-shadow:
+      0 0 0 0 rgb(var(--teal) / 0.3),
+      0 0 30px 8px rgb(var(--teal) / 0.1);
   }
   50% {
-    transform: scale(1.04);
-    box-shadow: 0 0 0 18px rgb(var(--ink) / 0);
+    transform: scale(1.05);
+    box-shadow:
+      0 0 0 16px rgb(var(--teal) / 0),
+      0 0 50px 16px rgb(var(--teal) / 0.15);
   }
 }
 
 @keyframes orb-glow {
   0%,
   100% {
-    box-shadow: 0 0 20px 4px rgb(var(--ink) / 0.15);
+    box-shadow:
+      0 0 24px 6px rgb(var(--teal) / 0.2),
+      inset 0 0 20px 4px rgb(var(--teal) / 0.08);
   }
   50% {
-    box-shadow: 0 0 36px 10px rgb(var(--ink) / 0.3);
+    box-shadow:
+      0 0 48px 14px rgb(var(--teal) / 0.35),
+      inset 0 0 30px 6px rgb(var(--teal) / 0.12);
   }
 }
 
@@ -100,7 +126,38 @@
     opacity: 0.5;
   }
   100% {
-    transform: scale(1.8);
+    transform: scale(2);
     opacity: 0;
   }
+}
+
+@keyframes orb-ring-2 {
+  0% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+/* Radial spotlight behind the orb */
+.orb-spotlight {
+  background: radial-gradient(
+    circle at center,
+    rgb(var(--teal) / 0.06) 0%,
+    rgb(var(--teal) / 0.03) 30%,
+    transparent 70%
+  );
+}
+
+/* Listening state: darker radial */
+.orb-spotlight-active {
+  background: radial-gradient(
+    circle at center,
+    rgb(var(--teal) / 0.12) 0%,
+    rgb(var(--teal) / 0.05) 35%,
+    transparent 70%
+  );
 }
