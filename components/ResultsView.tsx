@@ -8,7 +8,7 @@ import { Card } from "@/components/ui";
 
 type FlowState = {
   status: "created" | "processing" | "completed" | "not_found";
-  result?: CompatibilityResult;
+  result?: CompatibilityResult & { aiSummary?: string };
   initiatorPersona?: Persona;
   roommatePersona?: Persona;
 };
@@ -37,42 +37,6 @@ function PersonaCard({ persona, label }: { persona: Persona; label: string }) {
   );
 }
 
-function AxisComparison({ personaA, personaB }: { personaA: Persona; personaB: Persona }) {
-  return (
-    <div className="divide-y divide-line">
-      {personaA.axes.map((axisA, i) => {
-        const axisB = personaB.axes[i];
-        const match = axisA.chosen === axisB.chosen;
-        return (
-          <div key={axisA.name} className="px-6 py-4">
-            <div className="flex items-center justify-between">
-              <span className="eyebrow">{axisA.name}</span>
-              <span className={`text-[10px] font-semibold uppercase ${match ? "text-green-600" : "text-accent-ink"}`}>
-                {match ? "Match" : "Different"}
-              </span>
-            </div>
-            <div className="mt-3 flex items-center gap-3 text-xs">
-              <span className="w-16 text-right font-medium text-ink-soft">{axisA.left}</span>
-              <div className="relative flex-1 h-2 rounded-full bg-line">
-                <div
-                  className="absolute top-0 h-2 w-2 rounded-full bg-ink ring-2 ring-surface"
-                  style={{ left: `${axisA.chosen === "left" ? 100 - axisA.strength : axisA.strength}%` }}
-                  title="Person 1"
-                />
-                <div
-                  className="absolute top-0 h-2 w-2 rounded-full bg-accent ring-2 ring-surface"
-                  style={{ left: `${axisB.chosen === "left" ? 100 - axisB.strength : axisB.strength}%` }}
-                  title="Person 2"
-                />
-              </div>
-              <span className="w-16 font-medium text-ink-soft">{axisA.right}</span>
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
 
 export default function ResultsView({ flowId }: { flowId: string }) {
   const [state, setState] = useState<FlowState>({ status: "processing" });
@@ -91,7 +55,9 @@ export default function ResultsView({ flowId }: { flowId: string }) {
         const data = (await res.json()) as FlowState;
         if (cancelled) return;
         setState(data);
-        if (data.status !== "completed") {
+        // Keep polling until completed AND aiSummary is ready (generated async in background)
+        const summaryReady = data.status === "completed" && !!data.result?.aiSummary;
+        if (data.status !== "completed" || !summaryReady) {
           timer = setTimeout(poll, 1000);
         }
       } catch {
@@ -166,26 +132,46 @@ export default function ResultsView({ flowId }: { flowId: string }) {
           )}
         </div>
 
-        <div className="mt-6 border-t border-line">
-          {categories.map((c) => (
-            <div key={c.name} className="px-6 py-4 border-b border-line last:border-b-0">
-              <div className="flex items-center justify-between">
-                <span className="eyebrow">{c.name}</span>
-                <span className="text-xs font-medium text-ink tnum">{c.score > 0 ? `+${c.score}` : "0"}</span>
-              </div>
-              <div className="mt-3 h-px w-full bg-line">
-                <div className="h-px bg-accent" style={{ width: `${c.score}%` }} />
-              </div>
+        {/* Per-category breakdown with both people's axis positions */}
+        {state.initiatorPersona && state.roommatePersona && (
+          <div className="mt-6 border-t border-line">
+            <div className="flex items-center gap-4 px-6 py-2 text-[10px] text-ink-soft">
+              <span className="flex items-center gap-1.5"><span className="inline-block h-2.5 w-2.5 rounded-full bg-ink" /> Person 1</span>
+              <span className="flex items-center gap-1.5"><span className="inline-block h-2.5 w-2.5 rounded-full bg-accent" /> Person 2</span>
             </div>
-          ))}
-        </div>
+            {state.initiatorPersona.axes.map((axisA, i) => {
+              const axisB = state.roommatePersona!.axes[i];
+              const match = axisA.chosen === axisB.chosen;
+              const dotA = axisA.chosen === "left" ? 100 - axisA.strength : axisA.strength;
+              const dotB = axisB.chosen === "left" ? 100 - axisB.strength : axisB.strength;
+              return (
+                <div key={axisA.name} className="px-6 py-4 border-t border-line">
+                  <div className="flex items-center justify-between">
+                    <span className="eyebrow">{axisA.name}</span>
+                    <span className={`text-[10px] font-semibold uppercase tracking-wide ${match ? "text-green-600" : "text-accent-ink"}`}>
+                      {match ? "aligned" : "different"}
+                    </span>
+                  </div>
+                  <div className="mt-3 flex items-center gap-3 text-xs text-ink-soft">
+                    <span className="w-14 text-right">{axisA.left}</span>
+                    <div className="relative flex-1 h-1.5 rounded-full bg-line">
+                      <div className="absolute top-1/2 -translate-y-1/2 h-3 w-3 rounded-full bg-ink ring-2 ring-surface" style={{ left: `calc(${dotA}% - 6px)` }} />
+                      <div className="absolute top-1/2 -translate-y-1/2 h-3 w-3 rounded-full bg-accent ring-2 ring-surface" style={{ left: `calc(${dotB}% - 6px)` }} />
+                    </div>
+                    <span className="w-14">{axisA.right}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </Card>
 
       {/* Dealbreakers alignment table */}
       {dealbreakers && dealbreakers.length > 0 && (
         <Card className="overflow-hidden">
           <div className="px-6 pt-6 pb-2">
-            <span className="eyebrow">Key compatibility points</span>
+            <span className="eyebrow">Dealbreakers</span>
           </div>
           <table className="w-full text-sm">
             <thead>
@@ -212,22 +198,6 @@ export default function ResultsView({ flowId }: { flowId: string }) {
         </Card>
       )}
 
-      {state.initiatorPersona && state.roommatePersona && (
-        <Card className="overflow-hidden">
-          <div className="px-6 pt-4">
-            <div className="rule-label">
-              <span className="eyebrow">Axis comparison</span>
-            </div>
-            <div className="mt-2 flex items-center gap-4 text-xs text-ink-soft">
-              <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-ink" /> Person 1</span>
-              <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-accent" /> Person 2</span>
-            </div>
-          </div>
-          <div className="mt-2">
-            <AxisComparison personaA={state.initiatorPersona} personaB={state.roommatePersona} />
-          </div>
-        </Card>
-      )}
     </div>
   );
 }

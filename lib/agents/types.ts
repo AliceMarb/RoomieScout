@@ -2,13 +2,15 @@ export type AgentDomain =
   | "communication"
   | "cleanliness"
   | "social"
-  | "personal_space";
+  | "personal_space"
+  | "dealbreakers";
 
 export const ALL_DOMAINS: AgentDomain[] = [
   "communication",
   "cleanliness",
   "social",
   "personal_space",
+  "dealbreakers",
 ];
 
 export type AgentState = {
