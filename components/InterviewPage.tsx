@@ -314,7 +314,10 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
           <div className="relative flex items-center justify-center">
             {(orbState === "speaking" || orbState === "listening") && (
               <span
-                className="absolute rounded-full bg-accent/30"
+                className={cn(
+                  "absolute rounded-full",
+                  orbState === "listening" ? "bg-ink/20" : "bg-ink/10",
+                )}
                 style={{
                   width: "100%",
                   height: "100%",
@@ -324,14 +327,14 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
             )}
             <button
               className={cn(
-                "relative flex h-40 w-40 items-center justify-center rounded-full transition-all duration-300 sm:h-48 sm:w-48",
-                orbState === "idle" && canRecord && "bg-accent cursor-pointer shadow-lg hover:shadow-xl active:scale-95",
-                orbState === "idle" && !canRecord && "bg-accent/40 cursor-not-allowed",
-                orbState === "speaking" && "bg-accent cursor-default",
-                orbState === "listening" && "bg-ink cursor-pointer ring-4 ring-accent/40",
-                orbState === "transcribing" && "bg-accent/60 animate-pulse cursor-not-allowed",
-                orbState === "thinking" && "bg-accent/60 cursor-not-allowed",
-                orbState === "done" && "bg-accent cursor-default",
+                "relative flex h-40 w-40 items-center justify-center rounded-full border-2 transition-all duration-300 sm:h-48 sm:w-48",
+                orbState === "idle" && canRecord && "border-line bg-surface cursor-pointer shadow-lg hover:shadow-xl active:scale-95",
+                orbState === "idle" && !canRecord && "border-line/40 bg-surface/40 cursor-not-allowed",
+                orbState === "speaking" && "border-ink/20 bg-surface cursor-default",
+                orbState === "listening" && "border-ink bg-ink cursor-pointer ring-4 ring-ink/20",
+                orbState === "transcribing" && "border-line bg-surface/60 animate-pulse cursor-not-allowed",
+                orbState === "thinking" && "border-line bg-surface/60 cursor-not-allowed",
+                orbState === "done" && "border-ink/20 bg-surface cursor-default",
               )}
               style={{
                 ...(orbState === "speaking" ? { animation: "orb-pulse 2s ease-in-out infinite" } : {}),
@@ -357,12 +360,12 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
             >
               {orbState === "thinking" ? (
                 <div className="flex items-center gap-1.5">
-                  <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-paper/80 [animation-delay:-0.3s]" />
-                  <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-paper/80 [animation-delay:-0.15s]" />
-                  <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-paper/80" />
+                  <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-ink/50 [animation-delay:-0.3s]" />
+                  <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-ink/50 [animation-delay:-0.15s]" />
+                  <span className="h-2.5 w-2.5 animate-bounce rounded-full bg-ink/50" />
                 </div>
               ) : orbState === "done" ? (
-                <span className="font-display text-5xl font-bold text-paper/90">{"✓"}</span>
+                <span className="font-display text-5xl font-bold text-ink/80">{"✓"}</span>
               ) : orbState === "listening" ? (
                 <Image src="/user-avatar.svg" alt="You" width={80} height={80} className="opacity-90" />
               ) : (
