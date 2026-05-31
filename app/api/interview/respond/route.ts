@@ -51,7 +51,7 @@ export async function POST(req: Request) {
       });
     }
 
-    appendMessage(userId, "ai", result.question);
+    appendMessage(userId, "ai", result.question, result.domain);
     advanceQuestion(userId);
 
     const questionAudio = await textToSpeech(result.question);
@@ -59,6 +59,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       questionIndex: session.currentQuestionIndex,
       question: result.question,
+      domain: result.domain,
       userTranscript: userText,
       audio: questionAudio ? questionAudio.toString("base64") : null,
       done: false,

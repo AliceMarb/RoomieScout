@@ -21,7 +21,7 @@ export async function POST(req: Request) {
     }
 
     appendMessage(userId, "ai", SCOUT_INTRO);
-    appendMessage(userId, "ai", result.question);
+    appendMessage(userId, "ai", result.question, result.domain);
 
     const audioBuffer = await textToSpeech(`${SCOUT_INTRO} ${result.question}`);
 
@@ -29,6 +29,7 @@ export async function POST(req: Request) {
       intro: SCOUT_INTRO,
       questionIndex: 0,
       question: result.question,
+      domain: result.domain,
       audio: audioBuffer ? audioBuffer.toString("base64") : null,
       done: false,
     });
