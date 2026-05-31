@@ -391,7 +391,13 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
 
           {/* Status */}
           <div className="mt-8 text-center sm:mt-10">
-            <p className="eyebrow text-teal/70" aria-live="polite">{statusText[orbState]}</p>
+            {orbState === "ready" ? (
+              <button onClick={handleTapToStart} className="eyebrow text-teal/70 hover:text-teal transition-colors cursor-pointer">
+                {statusText[orbState]}
+              </button>
+            ) : (
+              <p className="eyebrow text-teal/70" aria-live="polite">{statusText[orbState]}</p>
+            )}
           </div>
 
           {/* Progress dots */}
