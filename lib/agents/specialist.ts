@@ -1,13 +1,8 @@
 import { getOpenAI, MODEL } from "@/lib/openai";
 import { getSpecialistPrompt } from "./prompts";
+import { formatTranscript } from "./format";
 import type { AgentDomain, AgentState, SpecialistResponse } from "./types";
 import type { Message } from "@/lib/transcriptStore";
-
-function formatTranscript(transcript: Message[]): string {
-  return transcript
-    .map((m) => `${m.speaker === "ai" ? "Scout" : "User"}: ${m.text}`)
-    .join("\n");
-}
 
 export async function getSpecialistQuestion(
   domain: AgentDomain,

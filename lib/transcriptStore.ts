@@ -3,6 +3,7 @@ export type Speaker = "ai" | "user";
 export type Message = {
   speaker: Speaker;
   text: string;
+  domain?: string;
 };
 
 import type { InterviewState } from "@/lib/agents";
@@ -28,10 +29,10 @@ export function createSession(userId: string, interviewState: InterviewState): S
   return session;
 }
 
-export function appendMessage(userId: string, speaker: Speaker, text: string): void {
+export function appendMessage(userId: string, speaker: Speaker, text: string, domain?: string): void {
   const session = sessions.get(userId);
   if (!session) throw new Error(`No session for userId: ${userId}`);
-  session.transcript.push({ speaker, text });
+  session.transcript.push({ speaker, text, ...(domain && { domain }) });
 }
 
 export function advanceQuestion(userId: string): void {
