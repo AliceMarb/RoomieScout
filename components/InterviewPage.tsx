@@ -49,6 +49,14 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [transcript]);
 
+  const startedRef = useRef(false);
+  useEffect(() => {
+    if (startedRef.current) return;
+    startedRef.current = true;
+    handleStart();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   function addMessage(speaker: "ai" | "user", text: string, domain?: string) {
     setTranscript((prev) => [...prev, { speaker, text, ...(domain && { domain }) }]);
   }
@@ -227,18 +235,7 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
         </button>
       </header>
 
-      {!started && (
-        <div className="flex flex-1 flex-col items-center justify-center gap-3">
-          <button
-            onClick={handleStart}
-            className="rounded-md bg-slate-900 px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-slate-800"
-          >
-            Start talking with Scout
-          </button>
-        </div>
-      )}
-
-      {started && (
+      {(
         <div className="flex-1 overflow-y-auto px-4 py-4 pb-32">
           <div className="mx-auto max-w-xl space-y-3">
             {transcript.map((msg, i) => {
@@ -284,7 +281,7 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
         </div>
       )}
 
-      {started && (
+      {(
         <div className="fixed bottom-0 left-0 right-0 border-t border-slate-200 bg-white px-4 py-3 shadow-md">
           <div className="mx-auto flex max-w-xl items-center gap-2">
             <input
