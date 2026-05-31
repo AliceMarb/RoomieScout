@@ -1,6 +1,6 @@
 import FlowNotFound from "@/components/FlowNotFound";
-import JoinForm from "@/components/JoinForm";
-import { Card, PageShell, Wordmark } from "@/components/ui";
+import JoinIntro from "@/components/JoinIntro";
+import { PageShell, Wordmark } from "@/components/ui";
 import { getFlow } from "@/lib/store";
 
 export default async function JoinPage({
@@ -23,21 +23,8 @@ export default async function JoinPage({
   return (
     <PageShell>
       <Wordmark />
-      <header className="mt-8">
-        <span className="eyebrow">You&apos;re invited</span>
-        <h1 className="mt-2 font-display text-3xl font-bold tracking-tight text-ink">
-          Are you two great roommates?
-        </h1>
-        <p className="mt-2 max-w-md text-sm text-ink-soft">
-          Chat with our AI for a minute — we&apos;ll figure out your Housemate Type and
-          see how well you match.
-        </p>
-      </header>
-
-      <div className="mt-8">
-        <Card className="p-6">
-          <JoinForm flowId={flowId} />
-        </Card>
+      <div className="mt-10">
+        <JoinIntro flowId={flowId} initiatorPersona={flow.initiatorPersona} initiatorEmail={flow.initiatorEmail} />
       </div>
     </PageShell>
   );

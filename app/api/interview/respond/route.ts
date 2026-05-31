@@ -1,80 +1,108 @@
 import { NextResponse } from "next/server";
 import { SCOUT_CLOSING } from "@/lib/interview";
-import { getSession, appendMessage, advanceQuestion } from "@/lib/transcriptStore";
 import { speechToText, textToSpeech } from "@/lib/elevenlabs";
 import { getNextQuestion, classifyPersona } from "@/lib/agents";
+import { createFlowFromInterview, getFlow, updateFlow } from "@/lib/store";
+import { computeCompatibility } from "@/lib/business-logic";
+import { formatTranscript } from "@/lib/agents/format";
+import type { InterviewState } from "@/lib/agents";
+import type { Message } from "@/lib/transcriptStore";
 
 export async function POST(req: Request) {
   try {
     const contentType = req.headers.get("content-type") ?? "";
-    let userId: string | null;
     let userText: string;
-
     let tts = false;
+    let interviewState: InterviewState;
+    let transcript: Message[];
+    let flowId: string | null = null;
+
     if (contentType.includes("application/json")) {
-      const body = (await req.json()) as { userId?: string; text?: string; tts?: boolean };
-      userId = body.userId ?? null;
-      if (!userId) return NextResponse.json({ error: "userId is required" }, { status: 400 });
+      const body = (await req.json()) as {
+        text?: string;
+        tts?: boolean;
+        interviewState?: InterviewState;
+        transcript?: Message[];
+        flowId?: string | null;
+      };
       if (!body.text?.trim()) return NextResponse.json({ error: "text is required" }, { status: 400 });
+      if (!body.interviewState) return NextResponse.json({ error: "interviewState is required" }, { status: 400 });
       userText = body.text.trim();
       tts = body.tts === true;
+      interviewState = body.interviewState;
+      transcript = body.transcript ?? [];
+      flowId = body.flowId ?? null;
     } else {
       const formData = await req.formData();
-      userId = formData.get("userId") as string | null;
       const audioFile = formData.get("audio") as File | null;
-      if (!userId) return NextResponse.json({ error: "userId is required" }, { status: 400 });
       if (!audioFile) return NextResponse.json({ error: "audio is required" }, { status: 400 });
-      const arrayBuffer = await audioFile.arrayBuffer();
-      const audioBuffer = Buffer.from(arrayBuffer);
-      userText = await speechToText(audioBuffer, audioFile.type || "audio/webm");
+      const stateRaw = formData.get("interviewState") as string | null;
+      if (!stateRaw) return NextResponse.json({ error: "interviewState is required" }, { status: 400 });
+      userText = await speechToText(Buffer.from(await audioFile.arrayBuffer()), audioFile.type || "audio/webm");
       tts = formData.get("tts") === "true";
+      interviewState = JSON.parse(stateRaw);
+      transcript = JSON.parse((formData.get("transcript") as string) ?? "[]");
+      flowId = (formData.get("flowId") as string | null) ?? null;
     }
 
-    const session = getSession(userId);
-    if (!session) {
-      return NextResponse.json({ error: "Session not found. Call /start first." }, { status: 404 });
-    }
+    transcript.push({ speaker: "user", text: userText });
 
-    appendMessage(userId, "user", userText);
-
-    const result = await getNextQuestion(session.transcript, session.interviewState);
+    const result = await getNextQuestion(transcript, interviewState);
 
     if ("done" in result) {
-      appendMessage(userId, "ai", SCOUT_CLOSING);
+      transcript.push({ speaker: "ai", text: SCOUT_CLOSING });
 
-      const [closingAudio, personaResult] = await Promise.all([
+      const [closingAudio, persona] = await Promise.all([
         tts ? textToSpeech(SCOUT_CLOSING) : Promise.resolve(null),
-        classifyPersona(session.transcript),
+        classifyPersona(transcript),
       ]);
+
+      const transcriptText = formatTranscript(transcript);
+      let redirectTo: string;
+
+      if (flowId) {
+        const flow = getFlow(flowId);
+        if (flow) {
+          const compat = computeCompatibility(flow.initiatorPersona, persona);
+          updateFlow(flowId, {
+            roommateInput: transcriptText,
+            roommatePersona: persona,
+            result: compat,
+            resultsReadyAt: Date.now() + 2500,
+          });
+        }
+        redirectTo = `/results/${flowId}`;
+      } else {
+        const flow = createFlowFromInterview(transcriptText, persona);
+        redirectTo = `/share/${flow.id}`;
+      }
 
       return NextResponse.json({
         done: true,
-        transcript: session.transcript,
         question: SCOUT_CLOSING,
         userTranscript: userText,
         audio: closingAudio ? closingAudio.toString("base64") : null,
-        personas: personaResult.personas,
+        persona,
+        redirectTo,
+        transcript,
+        interviewState,
       });
     }
 
-    appendMessage(userId, "ai", result.question, result.domain);
-    advanceQuestion(userId);
-
+    transcript.push({ speaker: "ai", text: result.question, domain: result.domain });
     const questionAudio = tts ? await textToSpeech(result.question) : null;
 
     return NextResponse.json({
-      questionIndex: session.currentQuestionIndex,
       question: result.question,
       domain: result.domain,
       userTranscript: userText,
       audio: questionAudio ? questionAudio.toString("base64") : null,
+      interviewState,
+      transcript,
       done: false,
     });
   } catch (err) {
     console.error("[/api/interview/respond]", err);
-    return NextResponse.json(
-      { error: (err as Error).message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: (err as Error).message }, { status: 500 });
   }
 }

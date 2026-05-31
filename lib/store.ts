@@ -10,12 +10,13 @@ import {
 
 export type MatchingFlow = {
   id: string;
-  initiatorInput: string; // page 1 (placeholder for AI assessment)
-  initiatorPersona: Persona; // derived from the initiator's input
-  initiatorEmail?: string; // page 2
-  roommateInput?: string; // page 3 (placeholder for AI assessment)
-  result?: CompatibilityResult; // computed when the roommate responds
-  resultsReadyAt?: number; // Date.now() + delay; drives processing vs completed
+  initiatorInput: string;
+  initiatorPersona: Persona;
+  initiatorEmail?: string;
+  roommateInput?: string;
+  roommatePersona?: Persona;
+  result?: CompatibilityResult;
+  resultsReadyAt?: number;
   createdAt: string;
 };
 
@@ -47,6 +48,17 @@ export function updateFlow(
   const flow = flows.get(id);
   if (!flow) return undefined;
   Object.assign(flow, patch);
+  return flow;
+}
+
+export function createFlowFromInterview(transcript: string, persona: Persona): MatchingFlow {
+  const flow: MatchingFlow = {
+    id: crypto.randomUUID(),
+    initiatorInput: transcript,
+    initiatorPersona: persona,
+    createdAt: new Date().toISOString(),
+  };
+  flows.set(flow.id, flow);
   return flow;
 }
 
