@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { DEFAULT_USER_ID } from "@/lib/config";
+import { Button, Input, Wordmark } from "@/components/ui";
 
 type Message = { speaker: "ai" | "user"; text: string };
 
@@ -189,47 +190,57 @@ export default function InterviewPage() {
   const recordDisabled = done || !canRecord;
 
   return (
-    <main className="flex h-screen flex-col">
+    <main className="flex h-screen flex-col bg-paper bg-grid">
       {/* Header */}
-      <header className="shrink-0 border-b border-slate-100 px-4 py-4 text-center">
-        <h1 className="text-xl font-semibold text-slate-900">RoomieScout</h1>
+      <header className="shrink-0 border-b border-line px-5 py-4">
+        <div className="mx-auto flex max-w-xl items-center justify-between">
+          <Wordmark />
+          {started ? <span className="eyebrow">AI Interview</span> : null}
+        </div>
       </header>
 
-      {/* Name input — only before interview starts */}
+      {/* Intro / start screen */}
       {!started && (
-        <div className="flex flex-1 flex-col items-center justify-center gap-3">
-          {!DEFAULT_USER_ID && (
-            <input
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
-              placeholder="Your name or ID"
-              value={userId}
-              onChange={(e) => setUserId(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleStart()}
-            />
-          )}
-          <button
-            onClick={handleStart}
-            className="rounded-md bg-slate-900 px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-slate-800"
-          >
-            Start interview
-          </button>
+        <div className="flex flex-1 flex-col items-center justify-center px-5 text-center">
+          <span className="eyebrow">AI roommate compatibility</span>
+          <h1 className="mt-3 max-w-md font-display text-4xl font-bold tracking-tight text-ink">
+            Find your Housemate Type
+          </h1>
+          <p className="mt-3 max-w-sm text-sm leading-relaxed text-ink-soft">
+            Have a quick chat with Scout, our AI. We&apos;ll map how you like to live —
+            then you can see how you match with anyone.
+          </p>
+
+          <div className="mt-8 flex w-full max-w-xs flex-col items-stretch gap-3">
+            {!DEFAULT_USER_ID && (
+              <Input
+                placeholder="Your name or ID"
+                value={userId}
+                onChange={(e) => setUserId(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleStart()}
+              />
+            )}
+            <Button variant="accent" onClick={handleStart}>
+              Start the interview
+            </Button>
+          </div>
         </div>
       )}
 
       {/* Scrollable transcript */}
       {started && (
-        <div className="flex-1 overflow-y-auto px-4 py-4 pb-32">
-          <div className="mx-auto max-w-xl space-y-3">
+        <div className="flex-1 overflow-y-auto px-5 py-6 pb-36">
+          <div className="mx-auto max-w-xl space-y-4">
             {transcript.map((msg, i) => (
               <div key={i} className={`flex flex-col ${msg.speaker === "ai" ? "items-start" : "items-end"}`}>
-                <span className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                <span className="mb-1 eyebrow">
                   {msg.speaker === "ai" ? "Scout" : "You"}
                 </span>
                 <div className={[
-                  "max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
+                  "max-w-[80%] rounded-xl px-4 py-2.5 text-sm leading-relaxed",
                   msg.speaker === "ai"
-                    ? "rounded-bl-sm border border-slate-200 bg-white text-slate-800"
-                    : "rounded-br-sm bg-slate-900 text-white",
+                    ? "rounded-tl-sm border border-line bg-surface text-ink"
+                    : "rounded-tr-sm bg-ink text-paper",
                 ].join(" ")}>
                   {msg.text}
                 </div>
@@ -242,11 +253,11 @@ export default function InterviewPage() {
 
       {/* Pinned input bar */}
       {started && (
-        <div className="fixed bottom-0 left-0 right-0 border-t border-slate-200 bg-white px-4 py-3 shadow-md">
+        <div className="fixed bottom-0 left-0 right-0 border-t border-line bg-surface px-5 py-3">
           <div className="mx-auto flex max-w-xl items-center gap-2">
             {/* Text input */}
             <input
-              className="flex-1 rounded-full border border-slate-300 px-4 py-2 text-sm focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 disabled:opacity-40"
+              className="flex-1 rounded-full border border-line bg-paper px-4 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:border-accent disabled:opacity-40"
               placeholder="Or type your answer…"
               value={textInput}
               disabled={done}
@@ -258,7 +269,7 @@ export default function InterviewPage() {
             <button
               onClick={handleTextSubmit}
               disabled={recordDisabled || !textInput.trim() || recording}
-              className="rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-40 hover:bg-slate-700"
+              className="rounded-full bg-ink px-4 py-2.5 text-sm font-medium text-paper transition-colors hover:bg-ink/90 disabled:opacity-40"
             >
               Send
             </button>
@@ -271,14 +282,14 @@ export default function InterviewPage() {
               onTouchStart={(e) => { e.preventDefault(); handleRecordStart(); }}
               onTouchEnd={(e) => { e.preventDefault(); handleRecordStop(); }}
               className={[
-                "flex shrink-0 items-center justify-center rounded-full text-xl transition-colors",
+                "flex shrink-0 items-center justify-center rounded-full text-lg transition-colors",
                 transcribing
-                  ? "cursor-not-allowed bg-amber-400 text-white animate-pulse"
+                  ? "cursor-not-allowed bg-accent/40 text-white animate-pulse"
                   : recordDisabled
-                  ? "cursor-not-allowed bg-slate-200 text-slate-400"
+                  ? "cursor-not-allowed bg-line text-ink-faint"
                   : recording
-                  ? "cursor-pointer bg-red-500 text-white ring-4 ring-red-200"
-                  : "cursor-pointer bg-slate-900 text-white hover:bg-slate-700",
+                  ? "cursor-pointer bg-accent text-white ring-4 ring-accent/25"
+                  : "cursor-pointer bg-ink text-paper hover:bg-ink/90",
               ].join(" ")}
               style={{ width: 44, height: 44 }}
               title="Hold to speak"
@@ -288,7 +299,7 @@ export default function InterviewPage() {
           </div>
 
           {/* Status line */}
-          <p className="mt-1.5 text-center text-xs text-slate-400">{status}</p>
+          <p className="mt-2 text-center eyebrow">{status}</p>
         </div>
       )}
 

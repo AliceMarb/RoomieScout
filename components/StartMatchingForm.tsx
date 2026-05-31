@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
+import { Button, Field, Textarea } from "@/components/ui";
 
 export default function StartMatchingForm() {
   const router = useRouter();
@@ -36,33 +37,30 @@ export default function StartMatchingForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-5">
       {/* TODO: replace this text input with the dynamic voice-based AI agent that
           interviews the user and builds the compatibility profile. */}
-      <div>
-        <label htmlFor="text" className="block text-sm font-medium text-slate-700">
-          Tell the AI what matters to you in a roommate
-        </label>
-        <textarea
+      <Field
+        label="What matters to you at home"
+        htmlFor="text"
+        hint="A few sentences is enough — our AI takes it from here."
+      >
+        <Textarea
           id="text"
           required
           rows={5}
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="e.g. I'm tidy, work from home, early sleeper, splitting rent evenly…"
-          className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
         />
-      </div>
-      <button
-        type="submit"
-        disabled={submitting}
-        className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-slate-800 disabled:opacity-60"
-      >
-        {submitting ? "Starting…" : "Start compatibility test"}
-      </button>
+      </Field>
+
+      <Button type="submit" variant="accent" disabled={submitting} className="w-full">
+        {submitting ? "Starting…" : "Reveal my Housemate Type"}
+      </Button>
 
       {error ? (
-        <p className="text-sm text-red-600" role="alert">
+        <p className="text-sm text-accent-ink" role="alert">
           {error}
         </p>
       ) : null}

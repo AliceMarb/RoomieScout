@@ -1,4 +1,5 @@
 import ResultsView from "@/components/ResultsView";
+import { PageShell, Wordmark } from "@/components/ui";
 
 export default async function ResultsPage({
   params,
@@ -7,18 +8,21 @@ export default async function ResultsPage({
 }) {
   const { flowId } = await params;
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-10">
-      <div className="mx-auto max-w-2xl">
-        <header className="mb-8">
-          <h1 className="text-2xl font-semibold text-slate-900">
-            Compatibility results
-          </h1>
-        </header>
+    <PageShell>
+      <Wordmark />
+      <header className="mt-8">
+        <span className="eyebrow">The verdict</span>
+        <h1 className="mt-2 font-display text-3xl font-bold tracking-tight text-ink">
+          Compatibility results
+        </h1>
+        <p className="mt-2 max-w-md text-sm text-ink-soft">
+          Here&apos;s how your Housemate Types stack up.
+        </p>
+      </header>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <ResultsView flowId={flowId} />
-        </section>
+      <div className="mt-8">
+        <ResultsView flowId={flowId} />
       </div>
-    </main>
+    </PageShell>
   );
 }

@@ -1,3 +1,72 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ───────────────────────────────────────────────────────────────────────────
+   RoomieScout design system — "Swiss functional"
+   Warm paper canvas · ink type · single coral accent · grotesk + grotesk-body.
+   Colors are RGB channels so Tailwind alpha modifiers work (e.g. bg-accent/10).
+   ─────────────────────────────────────────────────────────────────────────── */
+:root {
+  --paper: 250 249 246; /* warm off-white canvas */
+  --surface: 255 255 255; /* cards / sheets */
+  --ink: 26 25 23; /* near-black text */
+  --ink-soft: 107 106 99; /* muted text */
+  --ink-faint: 163 161 152; /* labels, hints */
+  --line: 230 228 221; /* hairline borders */
+  --line-strong: 26 25 23; /* emphasis rules */
+  --accent: 255 107 90; /* warm coral */
+  --accent-ink: 209 60 43; /* coral, text-safe on paper */
+  --accent-soft: 255 237 233; /* coral tint background */
+
+  --font-display: "Space Grotesk", sans-serif;
+  --font-sans: "Inter", sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-paper font-sans text-ink antialiased;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display tracking-tight;
+  }
+  ::selection {
+    background-color: rgb(var(--accent) / 0.25);
+  }
+  /* Coral focus ring across all interactive elements */
+  :focus-visible {
+    @apply outline-none ring-2 ring-accent/60 ring-offset-2 ring-offset-paper;
+  }
+}
+
+@layer components {
+  /* Tracked, uppercase micro-label — a recurring Swiss motif */
+  .eyebrow {
+    @apply font-sans text-[11px] font-medium uppercase tracking-eyebrow text-ink-faint;
+  }
+
+  /* The signature label-with-rule: "LABEL ─────────────►" */
+  .rule-label {
+    @apply flex items-center gap-3;
+  }
+  .rule-label::after {
+    content: "";
+    @apply h-px flex-1 bg-line;
+  }
+}
+
+@layer utilities {
+  /* Faint background grid — visible in the margins, the "lines & vibes" base */
+  .bg-grid {
+    background-image:
+      linear-gradient(to right, rgb(var(--line) / 0.45) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(var(--line) / 0.45) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+}

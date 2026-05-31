@@ -11,6 +11,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 There is no test runner configured yet.
 
+## Design system
+
+The UI follows one deliberate language — **Swiss functional**: warm paper canvas, ink type, a single warm-coral accent, hairline rules and a faint background grid, with **Space Grotesk** (display) + **Inter** (body). Build every screen from these pieces; do not introduce ad-hoc colors, fonts, or one-off slate/`bg-white` styling.
+
+- **Tokens live in two places only.** Color/spacing/radius tokens are CSS variables in `app/globals.css` (`:root`) and surfaced as Tailwind utilities in `tailwind.config.ts`. Use the semantic names — never raw hex or Tailwind's default palette (`slate-*`, `red-*`, etc.):
+  - Color: `bg-paper`, `bg-surface`, `text-ink` / `text-ink-soft` / `text-ink-faint`, `border-line`, `bg-accent` / `text-accent` / `text-accent-ink` / `bg-accent-soft`. All are RGB-channel vars, so alpha modifiers work (`bg-accent/10`, `ring-accent/60`).
+  - Type: `font-display` (Space Grotesk) for headings/codes/numbers, `font-sans` (Inter) for body. Fonts are wired via `next/font` in `app/layout.tsx`.
+  - Errors use `text-accent-ink` (coral), not red.
+- **Shared primitives are in `components/ui.tsx`.** Reach for these before writing markup: `PageShell` (canvas + grid + centered `max-w-page` column), `Wordmark`, `Card`, `Button` (`variant`: `solid` ink / `accent` coral / `outline` / `ghost`), `Input`, `Textarea`, `Field` (labelled control), `Eyebrow`, `RuleLabel`, and the `cn()` class joiner.
+- **Signature motifs:** the `.eyebrow` class (tiny uppercase tracked label) titles most sections; `RuleLabel` / `.rule-label` draws an eyebrow followed by a hairline that fills the row; `.bg-grid` is the faint margin grid; numerals/codes use `.tnum` (tabular). Spectrum/score bars are 1px `bg-line` tracks with a coral fill/marker (see `PersonaCard` and `ResultsView`).
+- A page = `PageShell` › `Wordmark` › a header (`eyebrow` + `font-display` h1 + `text-ink-soft` subtitle) › `Card`-wrapped content.
+
 ## Architecture
 
 RoomieScout is a Next.js 15 App Router + React 19 + TypeScript app implementing an AI roommate compatibility test. It is a 4-page flow built around a single in-memory resource (a "matching flow"). The AI interview and email/notification pieces are intentionally **stubbed with `TODO`s** — the wiring is complete end-to-end.

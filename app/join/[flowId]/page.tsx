@@ -1,5 +1,6 @@
 import FlowNotFound from "@/components/FlowNotFound";
 import JoinForm from "@/components/JoinForm";
+import { Card, PageShell, Wordmark } from "@/components/ui";
 import { getFlow } from "@/lib/store";
 
 export default async function JoinPage({
@@ -20,22 +21,24 @@ export default async function JoinPage({
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-10">
-      <div className="mx-auto max-w-2xl space-y-6">
-        <header>
-          <h1 className="text-2xl font-semibold text-slate-900">
-            Someone wants to know if you&apos;d be great roommates 👋
-          </h1>
-          <p className="text-sm text-slate-500">
-            Chat with our AI for a minute — we&apos;ll figure out your Housemate Type
-            and see how well you two match.
-          </p>
-        </header>
+    <PageShell>
+      <Wordmark />
+      <header className="mt-8">
+        <span className="eyebrow">You&apos;re invited</span>
+        <h1 className="mt-2 font-display text-3xl font-bold tracking-tight text-ink">
+          Are you two great roommates?
+        </h1>
+        <p className="mt-2 max-w-md text-sm text-ink-soft">
+          Chat with our AI for a minute — we&apos;ll figure out your Housemate Type and
+          see how well you match.
+        </p>
+      </header>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="mt-8">
+        <Card className="p-6">
           <JoinForm flowId={flowId} />
-        </section>
+        </Card>
       </div>
-    </main>
+    </PageShell>
   );
 }

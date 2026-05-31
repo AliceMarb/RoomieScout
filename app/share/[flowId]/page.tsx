@@ -1,6 +1,7 @@
 import FlowNotFound from "@/components/FlowNotFound";
 import PersonaCard from "@/components/PersonaCard";
 import SharePanel from "@/components/SharePanel";
+import { Card, PageShell, Wordmark } from "@/components/ui";
 import { getFlow } from "@/lib/store";
 
 export default async function SharePage({
@@ -21,24 +22,25 @@ export default async function SharePage({
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 py-10">
-      <div className="mx-auto max-w-2xl space-y-6">
-        <header>
-          <h1 className="text-2xl font-semibold text-slate-900">
-            Meet your Housemate Type
-          </h1>
-          <p className="text-sm text-slate-500">
-            This is your HMTI. Share the test with a potential roommate to see how
-            you match.
-          </p>
-        </header>
+    <PageShell>
+      <Wordmark />
+      <header className="mt-8">
+        <span className="eyebrow">Your result</span>
+        <h1 className="mt-2 font-display text-3xl font-bold tracking-tight text-ink">
+          Meet your Housemate Type
+        </h1>
+        <p className="mt-2 max-w-md text-sm text-ink-soft">
+          This is your HMTI. Share the test with a potential roommate to see how you
+          match.
+        </p>
+      </header>
 
+      <div className="mt-8 space-y-6">
         <PersonaCard persona={flow.initiatorPersona} />
-
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <Card className="p-6">
           <SharePanel flowId={flowId} />
-        </section>
+        </Card>
       </div>
-    </main>
+    </PageShell>
   );
 }

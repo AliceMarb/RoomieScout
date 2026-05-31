@@ -1,9 +1,23 @@
 import type { Metadata } from "next";
+import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 
+const display = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
+});
+
+const sans = Inter({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: "RoomieScout",
-  description: "Next.js boilerplate with sign-in and a submit endpoint.",
+  title: "RoomieScout — Find your Housemate Type",
+  description:
+    "An AI roommate compatibility test. Discover your Housemate Type (HMTI) and see how you match.",
 };
 
 export default function RootLayout({
@@ -12,8 +26,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className="bg-slate-50 text-slate-900 antialiased">{children}</body>
+    <html lang="en" className={`${display.variable} ${sans.variable}`}>
+      <body className="bg-paper text-ink antialiased">{children}</body>
     </html>
   );
 }

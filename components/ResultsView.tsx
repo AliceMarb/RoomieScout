@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { CompatibilityResult } from "@/lib/business-logic";
+import { Card } from "@/components/ui";
 
 type FlowState = {
   status: "created" | "processing" | "completed" | "not_found";
@@ -41,44 +42,59 @@ export default function ResultsView({ flowId }: { flowId: string }) {
   }, [flowId]);
 
   if (state.status === "not_found") {
-    return <p className="text-sm text-red-600">This matching flow was not found.</p>;
+    return (
+      <Card className="p-8 text-center">
+        <p className="text-sm text-ink-soft">This compatibility test was not found.</p>
+      </Card>
+    );
   }
 
   if (state.status !== "completed" || !state.result) {
     return (
-      <div className="flex flex-col items-center gap-3 py-8 text-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-slate-900" />
-        <p className="text-sm text-slate-600">Crunching your compatibility…</p>
-      </div>
+      <Card className="p-10">
+        <div className="flex flex-col items-center gap-4 text-center">
+          <span className="h-6 w-6 animate-spin rounded-full border-2 border-line border-t-accent" />
+          <div>
+            <p className="eyebrow">Processing</p>
+            <p className="mt-1 text-sm text-ink-soft">Crunching your compatibility…</p>
+          </div>
+        </div>
+      </Card>
     );
   }
 
   const { score, categories, summary } = state.result;
 
   return (
-    <div className="space-y-6">
-      <div className="text-center">
-        <p className="text-sm font-medium text-slate-500">Compatibility score</p>
-        <p className="text-5xl font-bold text-slate-900">{score}%</p>
-        <p className="mt-2 text-sm text-slate-600">{summary}</p>
+    <Card className="overflow-hidden">
+      {/* Score */}
+      <div className="px-6 pt-6">
+        <div className="rule-label">
+          <span className="eyebrow">Compatibility</span>
+        </div>
+        <div className="mt-5 flex items-end gap-2">
+          <span className="font-display text-6xl font-bold leading-none text-ink tnum">
+            {score}
+          </span>
+          <span className="mb-1 font-display text-2xl font-semibold text-accent">%</span>
+        </div>
+        <p className="mt-3 text-sm leading-relaxed text-ink-soft">{summary}</p>
       </div>
 
-      <div className="space-y-3">
+      {/* Category breakdown */}
+      <div className="mt-6 divide-y divide-line border-t border-line">
         {categories.map((c) => (
-          <div key={c.name}>
-            <div className="flex justify-between text-sm text-slate-700">
-              <span>{c.name}</span>
-              <span>{c.score}%</span>
+          <div key={c.name} className="px-6 py-4">
+            <div className="flex items-center justify-between">
+              <span className="eyebrow">{c.name}</span>
+              <span className="text-xs font-medium text-ink tnum">{c.score}%</span>
             </div>
-            <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-slate-200">
-              <div
-                className="h-full rounded-full bg-slate-900"
-                style={{ width: `${c.score}%` }}
-              />
+            <div className="mt-3 h-px w-full bg-line">
+              <div className="h-px bg-accent" style={{ width: `${c.score}%` }} />
             </div>
           </div>
         ))}
       </div>
-    </div>
+    </Card>
   );
 }
