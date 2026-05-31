@@ -2,11 +2,16 @@
 // TODO: replace with a real database. This store is lost on server restart and
 // is not shared across multiple serverless instances.
 
-import type { CompatibilityResult } from "@/lib/business-logic";
+import {
+  computePersona,
+  type CompatibilityResult,
+  type Persona,
+} from "@/lib/business-logic";
 
 export type MatchingFlow = {
   id: string;
   initiatorInput: string; // page 1 (placeholder for AI assessment)
+  initiatorPersona: Persona; // derived from the initiator's input
   initiatorEmail?: string; // page 2
   roommateInput?: string; // page 3 (placeholder for AI assessment)
   result?: CompatibilityResult; // computed when the roommate responds
@@ -24,6 +29,7 @@ export function createFlow(initiatorInput: string): MatchingFlow {
   const flow: MatchingFlow = {
     id: crypto.randomUUID(),
     initiatorInput,
+    initiatorPersona: computePersona(initiatorInput),
     createdAt: new Date().toISOString(),
   };
   flows.set(flow.id, flow);
