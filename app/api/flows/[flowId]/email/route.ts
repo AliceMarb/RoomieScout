@@ -8,7 +8,7 @@ export async function POST(
   { params }: { params: Promise<{ flowId: string }> },
 ) {
   const { flowId } = await params;
-  if (!getFlow(flowId)) {
+  if (!(await getFlow(flowId))) {
     return NextResponse.json({ error: "Flow not found" }, { status: 404 });
   }
 
@@ -24,6 +24,6 @@ export async function POST(
     return NextResponse.json({ error: "email is required" }, { status: 400 });
   }
 
-  updateFlow(flowId, { initiatorEmail: email });
+  await updateFlow(flowId, { initiatorEmail: email });
   return NextResponse.json({ ok: true });
 }

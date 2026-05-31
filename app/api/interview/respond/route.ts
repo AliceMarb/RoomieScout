@@ -61,10 +61,10 @@ export async function POST(req: Request) {
       let redirectTo: string;
 
       if (flowId) {
-        const flow = getFlow(flowId);
+        const flow = await getFlow(flowId);
         if (flow) {
           const compat = computeCompatibility(flow.initiatorPersona, persona);
-          updateFlow(flowId, {
+          await updateFlow(flowId, {
             roommateInput: transcriptText,
             roommatePersona: persona,
             result: compat,
@@ -73,7 +73,7 @@ export async function POST(req: Request) {
         }
         redirectTo = `/results/${flowId}`;
       } else {
-        const flow = createFlowFromInterview(transcriptText, persona);
+        const flow = await createFlowFromInterview(transcriptText, persona);
         redirectTo = `/share/${flow.id}`;
       }
 

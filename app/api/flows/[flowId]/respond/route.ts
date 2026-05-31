@@ -12,7 +12,7 @@ export async function POST(
   { params }: { params: Promise<{ flowId: string }> },
 ) {
   const { flowId } = await params;
-  const flow = getFlow(flowId);
+  const flow = await getFlow(flowId);
   if (!flow) {
     return NextResponse.json({ error: "Flow not found" }, { status: 404 });
   }
@@ -32,7 +32,7 @@ export async function POST(
   const roommateText = typeof body.text === "string" ? body.text.trim() : "";
   const result = computeCompatibility(flow.initiatorPersona, roommatePersona);
 
-  updateFlow(flowId, {
+  await updateFlow(flowId, {
     roommateInput: roommateText,
     roommatePersona,
     result,
@@ -48,7 +48,7 @@ export async function POST(
     flow.roommateName || "Person 2",
   )
     .then(({ aiSummary, dealbreakers }) =>
-      updateFlow(flowId, { result: { ...result, aiSummary, dealbreakers } })
+      updateFlow(flowId, { result: { ...result, aiSummary, dealbreakers } }).catch(() => {})
     )
     .catch((err) => console.error("[summary] Failed:", err));
 
