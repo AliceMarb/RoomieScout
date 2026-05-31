@@ -5,9 +5,12 @@ export type Message = {
   text: string;
 };
 
+import type { InterviewState } from "@/lib/agents";
+
 export type Session = {
   transcript: Message[];
   currentQuestionIndex: number;
+  interviewState: InterviewState;
 };
 
 // Attach to globalThis so Next.js hot-module-reload doesn't wipe the Map between requests
@@ -19,8 +22,8 @@ export function getSession(userId: string): Session | null {
   return sessions.get(userId) ?? null;
 }
 
-export function createSession(userId: string): Session {
-  const session: Session = { transcript: [], currentQuestionIndex: 0 };
+export function createSession(userId: string, interviewState: InterviewState): Session {
+  const session: Session = { transcript: [], currentQuestionIndex: 0, interviewState };
   sessions.set(userId, session);
   return session;
 }
