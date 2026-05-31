@@ -37,6 +37,7 @@ export default function InterviewPage() {
   const [personas, setPersonas] = useState<Persona[]>([]);
   const [userId, setUserId] = useState(DEFAULT_USER_ID);
   const [textInput, setTextInput] = useState("");
+  const [ttsEnabled, setTtsEnabled] = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -88,7 +89,7 @@ export default function InterviewPage() {
       const data = await fetchJSON<StartResponse>("/api/interview/start", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId }),
+        body: JSON.stringify({ userId, tts: ttsEnabled }),
       });
 
       if (data.intro) addMessage("ai", data.intro);
@@ -152,6 +153,7 @@ export default function InterviewPage() {
     const formData = new FormData();
     formData.append("userId", userId);
     formData.append("audio", blob, "recording.webm");
+    formData.append("tts", String(ttsEnabled));
 
     try {
       const data = await fetchJSON<RespondResponse>("/api/interview/respond", {
@@ -178,7 +180,7 @@ export default function InterviewPage() {
       const data = await fetchJSON<RespondResponse>("/api/interview/respond", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, text }),
+        body: JSON.stringify({ userId, text, tts: ttsEnabled }),
       });
       await afterRespond(data);
     } catch (err) {
@@ -198,8 +200,22 @@ export default function InterviewPage() {
 
   return (
     <main className="flex h-screen flex-col">
-      <header className="shrink-0 border-b border-slate-100 px-4 py-4 text-center">
+      <header className="shrink-0 border-b border-slate-100 px-4 py-3 flex items-center justify-between">
+        <div className="w-16" />
         <h1 className="text-xl font-semibold text-slate-900">RoomieScout</h1>
+        <button
+          onClick={() => {
+            if (!ttsEnabled && !window.confirm("This uses ElevenLabs credits. Only turn on with intention — turn off when done testing.")) return;
+            setTtsEnabled((v) => !v);
+          }}
+          title={ttsEnabled ? "Voice on — click to mute" : "Voice off (saves API credits)"}
+          className={[
+            "w-16 text-right text-xl transition-opacity",
+            ttsEnabled ? "opacity-100" : "opacity-30",
+          ].join(" ")}
+        >
+          {ttsEnabled ? "🔊" : "🔇"}
+        </button>
       </header>
 
       {!started && (

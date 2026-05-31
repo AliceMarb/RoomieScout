@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { computeCompatibility } from "@/lib/business-logic";
 import { getFlow, updateFlow } from "@/lib/store";
+import { sendResultsEmail } from "@/lib/email";
 
 const PROCESSING_DELAY_MS = 2500;
 
@@ -35,12 +36,12 @@ export async function POST(
     resultsReadyAt: Date.now() + PROCESSING_DELAY_MS,
   });
 
-  // TODO: send an email to flow.initiatorEmail with a link to /results/[flowId].
+  const emailStatus = flow.initiatorEmail ? `sending to ${flow.initiatorEmail}` : "no email saved";
   if (flow.initiatorEmail) {
-    console.log(
-      `[TODO email] Results ready for flow ${flowId} — notify ${flow.initiatorEmail}: /results/${flowId}`,
+    sendResultsEmail({ to: flow.initiatorEmail, flowId }).catch((err) =>
+      console.error("[email] Failed to send results email:", err),
     );
   }
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, debug_email: emailStatus });
 }

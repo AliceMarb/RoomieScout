@@ -6,7 +6,7 @@ import { createInitialInterviewState, getNextQuestion } from "@/lib/agents";
 
 export async function POST(req: Request) {
   try {
-    const { userId } = (await req.json()) as { userId?: string };
+    const { userId, tts } = (await req.json()) as { userId?: string; tts?: boolean };
     if (!userId) {
       return NextResponse.json({ error: "userId is required" }, { status: 400 });
     }
@@ -23,7 +23,7 @@ export async function POST(req: Request) {
     appendMessage(userId, "ai", SCOUT_INTRO);
     appendMessage(userId, "ai", result.question, result.domain);
 
-    const audioBuffer = await textToSpeech(`${SCOUT_INTRO} ${result.question}`);
+    const audioBuffer = tts ? await textToSpeech(`${SCOUT_INTRO} ${result.question}`) : null;
 
     return NextResponse.json({
       intro: SCOUT_INTRO,

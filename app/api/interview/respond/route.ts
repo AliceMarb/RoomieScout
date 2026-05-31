@@ -10,15 +10,15 @@ export async function POST(req: Request) {
     let userId: string | null;
     let userText: string;
 
+    let tts = false;
     if (contentType.includes("application/json")) {
-      // Text submission path
-      const body = (await req.json()) as { userId?: string; text?: string };
+      const body = (await req.json()) as { userId?: string; text?: string; tts?: boolean };
       userId = body.userId ?? null;
       if (!userId) return NextResponse.json({ error: "userId is required" }, { status: 400 });
       if (!body.text?.trim()) return NextResponse.json({ error: "text is required" }, { status: 400 });
       userText = body.text.trim();
+      tts = body.tts === true;
     } else {
-      // Audio submission path
       const formData = await req.formData();
       userId = formData.get("userId") as string | null;
       const audioFile = formData.get("audio") as File | null;
@@ -27,6 +27,7 @@ export async function POST(req: Request) {
       const arrayBuffer = await audioFile.arrayBuffer();
       const audioBuffer = Buffer.from(arrayBuffer);
       userText = await speechToText(audioBuffer, audioFile.type || "audio/webm");
+      tts = formData.get("tts") === "true";
     }
 
     const session = getSession(userId);
@@ -42,7 +43,7 @@ export async function POST(req: Request) {
       appendMessage(userId, "ai", SCOUT_CLOSING);
 
       const [closingAudio, personaResult] = await Promise.all([
-        textToSpeech(SCOUT_CLOSING),
+        tts ? textToSpeech(SCOUT_CLOSING) : Promise.resolve(null),
         classifyPersona(session.transcript),
       ]);
 
@@ -59,7 +60,7 @@ export async function POST(req: Request) {
     appendMessage(userId, "ai", result.question, result.domain);
     advanceQuestion(userId);
 
-    const questionAudio = await textToSpeech(result.question);
+    const questionAudio = tts ? await textToSpeech(result.question) : null;
 
     return NextResponse.json({
       questionIndex: session.currentQuestionIndex,
