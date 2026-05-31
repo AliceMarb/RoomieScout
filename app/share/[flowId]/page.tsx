@@ -30,8 +30,8 @@ export default async function SharePage({
           Meet your Housemate Type
         </h1>
         <p className="mt-2 max-w-md text-sm text-ink-soft">
-          This is your HMTI. Share the test with a potential roommate to see how you
-          match.
+          This is your HMTI — save or share your avatar card, then send the test to a
+          potential roommate.
         </p>
       </header>
 

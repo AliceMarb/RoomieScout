@@ -89,22 +89,22 @@ const HMTI_AXES = [
 
 // The 16 HMTI types, keyed by their four-letter code.
 const HMTI_TYPES: Record<string, { title: string; emoji: string; description: string }> = {
-  NPSD: { title: "The Curator", emoji: "🗂️", description: "Tidy, low-key, and routine-driven, with clear house rules." },
-  NPSL: { title: "The Quiet Keeper", emoji: "🧹", description: "Clean and steady, preferring calm over formal rules." },
-  NPFD: { title: "The Minimalist", emoji: "🍃", description: "Orderly and independent — flexible day-to-day but values agreements." },
-  NPFL: { title: "The Drifter", emoji: "🧘", description: "Tidy and self-contained, easygoing about schedules and rules." },
-  NOSD: { title: "The Organizer", emoji: "📋", description: "Tidy and sociable, with a steady routine and clear expectations." },
-  NOSL: { title: "The Welcoming Tidier", emoji: "🏡", description: "Clean, friendly, and routine-loving without the rulebook." },
-  NOFD: { title: "The Social Architect", emoji: "🛠️", description: "Tidy and outgoing, spontaneous but likes clear boundaries." },
-  NOFL: { title: "The Easy Host", emoji: "🎉", description: "Clean and social, going with the flow on schedules and rules." },
-  CPSD: { title: "The Steady Solo", emoji: "🧱", description: "Relaxed about mess but private, routine-driven, and rule-oriented." },
-  CPSL: { title: "The Homebody", emoji: "🛋️", description: "Easygoing and private, with a steady, low-pressure rhythm." },
-  CPFD: { title: "The Independent", emoji: "🚪", description: "Laid-back and private, flexible day-to-day but values agreements." },
-  CPFL: { title: "The Free Spirit", emoji: "🦋", description: "Relaxed, private, spontaneous, and allergic to strict rules." },
-  COSD: { title: "The Connector", emoji: "🌐", description: "Easygoing and social, with a steady routine and clear boundaries." },
-  COSL: { title: "The Nurturer", emoji: "🌱", description: "Warm, social, and steady, keeping things relaxed and flexible." },
-  COFD: { title: "The Adventurer", emoji: "🧭", description: "Spontaneous and social, relaxed about mess but likes some ground rules." },
-  COFL: { title: "The Free Roamer", emoji: "🎈", description: "Totally easygoing — relaxed, social, spontaneous, and rule-free." },
+  NPSD: { title: "The Peaceful Planner", emoji: "🦉", description: "Tidy, private, and routine-driven with clear house rules." },
+  NPSL: { title: "The Quiet Minimalist", emoji: "🐱", description: "Clean, private, and low-drama — keeps to themselves." },
+  NPFD: { title: "The Independent Organizer", emoji: "🦊", description: "Organized space, flexible schedule, strong boundaries." },
+  NPFL: { title: "The Clean Ghost", emoji: "✨", description: "Barely seen but keeps shared spaces spotless." },
+  NOSD: { title: "The House Captain", emoji: "🐕", description: "Friendly leader who runs the home with snacks and systems." },
+  NOSL: { title: "The Friendly Maintainer", emoji: "🐶", description: "Warm, tidy, and easygoing — everyone likes them." },
+  NOFD: { title: "The Social Organizer", emoji: "🐼", description: "Social and clean — spontaneous plans, scheduled responsibly." },
+  NOFL: { title: "The Clean Free Spirit", emoji: "🦜", description: "Playful energy with surprisingly clean counters." },
+  CPSD: { title: "The Boundary Keeper", emoji: "🐢", description: "Private and steady — clear boundaries, calm energy." },
+  CPSL: { title: "The Easygoing Independent", emoji: "🐼", description: "Chill, private, and low-pressure — no drama." },
+  CPFD: { title: "The Flexible Boundary Setter", emoji: "🦔", description: "Night owl with flexible routine and clear lines." },
+  CPFL: { title: "The True Ghost Roommate", emoji: "🦇", description: "Seen once a week — pays rent, barely interferes." },
+  COSD: { title: "The Communal Manager", emoji: "🫶", description: "Warm communal living with fair shared expectations." },
+  COSL: { title: "The Warm Housemate", emoji: "🐻", description: "Emotionally cozy — makes the apartment feel like home." },
+  COFD: { title: "The Social Negotiator", emoji: "🦝", description: "Brings energy and group-chat etiquette to flexible living." },
+  COFL: { title: "The Party-Compatible Roommate", emoji: "🦦", description: "The living room is a lifestyle — fun and spontaneous." },
 };
 
 /**

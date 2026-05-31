@@ -1,6 +1,9 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import PersonaSpectrum from "@/components/PersonaSpectrum";
+import ShareableAvatarCard from "@/components/ShareableAvatarCard";
+import { computePersona, type Persona as HmtiPersona } from "@/lib/business-logic";
 import { DEFAULT_USER_ID, DEBUG_AGENTS } from "@/lib/config";
 
 type Message = { speaker: "ai" | "user"; text: string; domain?: string };
@@ -13,7 +16,7 @@ type StartResponse = {
   done: boolean;
 };
 
-type Persona = { type: string; weight: number; rationale: string };
+type AgentPersona = { type: string; weight: number; rationale: string };
 
 type RespondResponse = {
   comment?: string;
@@ -23,7 +26,7 @@ type RespondResponse = {
   audio?: string | null;
   done: boolean;
   transcript?: Message[];
-  personas?: Persona[];
+  personas?: AgentPersona[];
 };
 
 export default function InterviewPage() {
@@ -34,7 +37,7 @@ export default function InterviewPage() {
   const [status, setStatus] = useState("Waiting for question…");
   const [canRecord, setCanRecord] = useState(false);
   const [transcript, setTranscript] = useState<Message[]>([]);
-  const [personas, setPersonas] = useState<Persona[]>([]);
+  const [personas, setPersonas] = useState<AgentPersona[]>([]);
   const [userId, setUserId] = useState(DEFAULT_USER_ID);
   const [textInput, setTextInput] = useState("");
   const [ttsEnabled, setTtsEnabled] = useState(false);
@@ -47,7 +50,7 @@ export default function InterviewPage() {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [transcript]);
+  }, [transcript, done]);
 
   function addMessage(speaker: "ai" | "user", text: string, domain?: string) {
     setTranscript((prev) => [...prev, { speaker, text, ...(domain && { domain }) }]);
@@ -73,7 +76,6 @@ export default function InterviewPage() {
   }
 
   async function handleStart() {
-    // No name/ID step — sessions just need a stable key, so mint one.
     const uid = userId.trim() || crypto.randomUUID();
     if (uid !== userId) setUserId(uid);
 
@@ -192,22 +194,54 @@ export default function InterviewPage() {
   }
 
   const domainColors: Record<string, { border: string; badge: string; label: string }> = {
-    communication: { border: "border-blue-400", badge: "bg-blue-100 text-blue-700", label: "Communication" },
-    cleanliness: { border: "border-green-400", badge: "bg-green-100 text-green-700", label: "Cleanliness" },
-    social: { border: "border-purple-400", badge: "bg-purple-100 text-purple-700", label: "Social" },
-    personal_space: { border: "border-orange-400", badge: "bg-orange-100 text-orange-700", label: "Personal Space" },
+    communication: {
+      border: "border-blue-400",
+      badge: "bg-blue-100 text-blue-700",
+      label: "Communication",
+    },
+    cleanliness: {
+      border: "border-green-400",
+      badge: "bg-green-100 text-green-700",
+      label: "Cleanliness",
+    },
+    social: {
+      border: "border-purple-400",
+      badge: "bg-purple-100 text-purple-700",
+      label: "Social",
+    },
+    personal_space: {
+      border: "border-orange-400",
+      badge: "bg-orange-100 text-orange-700",
+      label: "Personal Space",
+    },
   };
 
   const recordDisabled = done || !canRecord;
 
+  const hmtiPersona: HmtiPersona | null = useMemo(() => {
+    if (!done) return null;
+    const userText = transcript
+      .filter((m) => m.speaker === "user")
+      .map((m) => m.text)
+      .join("\n");
+    return computePersona(userText || userId);
+  }, [done, transcript, userId]);
+
   return (
     <main className="flex h-screen flex-col">
-      <header className="shrink-0 border-b border-slate-100 px-4 py-3 flex items-center justify-between">
+      <header className="flex shrink-0 items-center justify-between border-b border-slate-100 px-4 py-3">
         <div className="w-16" />
         <h1 className="text-xl font-semibold text-slate-900">RoomieScout</h1>
         <button
           onClick={() => {
-            if (!ttsEnabled && !window.confirm("This uses ElevenLabs credits. Only turn on with intention — turn off when done testing.")) return;
+            if (
+              !ttsEnabled &&
+              !window.confirm(
+                "This uses ElevenLabs credits. Only turn on with intention — turn off when done testing.",
+              )
+            ) {
+              return;
+            }
             setTtsEnabled((v) => !v);
           }}
           title={ttsEnabled ? "Voice on — click to mute" : "Voice off (saves API credits)"}
@@ -238,23 +272,30 @@ export default function InterviewPage() {
               const agentStyle = DEBUG_AGENTS && msg.domain ? domainColors[msg.domain] : null;
 
               return (
-                <div key={i} className={`flex flex-col ${msg.speaker === "ai" ? "items-start" : "items-end"}`}>
+                <div
+                  key={i}
+                  className={`flex flex-col ${msg.speaker === "ai" ? "items-start" : "items-end"}`}
+                >
                   <div className="mb-1 flex items-center gap-2">
                     <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
                       {msg.speaker === "ai" ? "Scout" : "You"}
                     </span>
                     {agentStyle && (
-                      <span className={`rounded-full px-2 py-0.5 text-[9px] font-semibold ${agentStyle.badge}`}>
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[9px] font-semibold ${agentStyle.badge}`}
+                      >
                         {agentStyle.label}
                       </span>
                     )}
                   </div>
-                  <div className={[
-                    "max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
-                    msg.speaker === "ai"
-                      ? `rounded-bl-sm bg-white text-slate-800 border-2 ${agentStyle ? agentStyle.border : "border-slate-200"}`
-                      : "rounded-br-sm bg-slate-900 text-white",
-                  ].join(" ")}>
+                  <div
+                    className={[
+                      "max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
+                      msg.speaker === "ai"
+                        ? `rounded-bl-sm bg-white text-slate-800 border-2 ${agentStyle ? agentStyle.border : "border-slate-200"}`
+                        : "rounded-br-sm bg-slate-900 text-white",
+                    ].join(" ")}
+                  >
                     {msg.text}
                   </div>
                 </div>
@@ -268,7 +309,10 @@ export default function InterviewPage() {
                 </h2>
                 <div className="space-y-3">
                   {personas.map((p, i) => (
-                    <div key={i} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <div
+                      key={i}
+                      className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+                    >
                       <div className="mb-2 flex items-center justify-between">
                         <span className="text-sm font-semibold text-slate-900">{p.type}</span>
                         <span className="text-sm font-bold text-slate-700">{p.weight}%</span>
@@ -285,6 +329,26 @@ export default function InterviewPage() {
                 </div>
               </div>
             )}
+
+            {done && hmtiPersona ? (
+              <div className="mt-10 space-y-4">
+                <div className="text-center">
+                  <h2 className="text-lg font-semibold text-slate-900">Your Housemate Type</h2>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Share your card — then invite a roommate to compare types.
+                  </p>
+                </div>
+                <ShareableAvatarCard persona={hmtiPersona} />
+                <details className="rounded-xl border border-slate-200 bg-white">
+                  <summary className="cursor-pointer px-4 py-3 text-sm font-medium text-slate-700">
+                    See full HMTI breakdown
+                  </summary>
+                  <div className="border-t border-slate-100 p-2">
+                    <PersonaSpectrum persona={hmtiPersona} />
+                  </div>
+                </details>
+              </div>
+            ) : null}
 
             <div ref={bottomRef} />
           </div>
@@ -305,7 +369,7 @@ export default function InterviewPage() {
             <button
               onClick={handleTextSubmit}
               disabled={recordDisabled || !textInput.trim() || recording}
-              className="rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-40 hover:bg-slate-700"
+              className="rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:opacity-40"
             >
               Send
             </button>
@@ -313,17 +377,23 @@ export default function InterviewPage() {
               disabled={recordDisabled}
               onMouseDown={handleRecordStart}
               onMouseUp={handleRecordStop}
-              onTouchStart={(e) => { e.preventDefault(); handleRecordStart(); }}
-              onTouchEnd={(e) => { e.preventDefault(); handleRecordStop(); }}
+              onTouchStart={(e) => {
+                e.preventDefault();
+                handleRecordStart();
+              }}
+              onTouchEnd={(e) => {
+                e.preventDefault();
+                handleRecordStop();
+              }}
               className={[
                 "flex shrink-0 items-center justify-center rounded-full text-xl transition-colors",
                 transcribing
-                  ? "cursor-not-allowed bg-amber-400 text-white animate-pulse"
+                  ? "animate-pulse cursor-not-allowed bg-amber-400 text-white"
                   : recordDisabled
-                  ? "cursor-not-allowed bg-slate-200 text-slate-400"
-                  : recording
-                  ? "cursor-pointer bg-red-500 text-white ring-4 ring-red-200"
-                  : "cursor-pointer bg-slate-900 text-white hover:bg-slate-700",
+                    ? "cursor-not-allowed bg-slate-200 text-slate-400"
+                    : recording
+                      ? "cursor-pointer bg-red-500 text-white ring-4 ring-red-200"
+                      : "cursor-pointer bg-slate-900 text-white hover:bg-slate-700",
               ].join(" ")}
               style={{ width: 44, height: 44 }}
               title="Hold to speak"
