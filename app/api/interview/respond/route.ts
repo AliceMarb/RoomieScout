@@ -6,28 +6,33 @@ import { getNextQuestion } from "@/lib/agents";
 
 export async function POST(req: Request) {
   try {
-    const formData = await req.formData();
-    const userId = formData.get("userId") as string | null;
-    const audioFile = formData.get("audio") as File | null;
+    const contentType = req.headers.get("content-type") ?? "";
+    let userId: string | null;
+    let userText: string;
 
-    if (!userId) {
-      return NextResponse.json({ error: "userId is required" }, { status: 400 });
-    }
-    if (!audioFile) {
-      return NextResponse.json({ error: "audio is required" }, { status: 400 });
+    if (contentType.includes("application/json")) {
+      // Text submission path
+      const body = (await req.json()) as { userId?: string; text?: string };
+      userId = body.userId ?? null;
+      if (!userId) return NextResponse.json({ error: "userId is required" }, { status: 400 });
+      if (!body.text?.trim()) return NextResponse.json({ error: "text is required" }, { status: 400 });
+      userText = body.text.trim();
+    } else {
+      // Audio submission path
+      const formData = await req.formData();
+      userId = formData.get("userId") as string | null;
+      const audioFile = formData.get("audio") as File | null;
+      if (!userId) return NextResponse.json({ error: "userId is required" }, { status: 400 });
+      if (!audioFile) return NextResponse.json({ error: "audio is required" }, { status: 400 });
+      const arrayBuffer = await audioFile.arrayBuffer();
+      const audioBuffer = Buffer.from(arrayBuffer);
+      userText = await speechToText(audioBuffer, audioFile.type || "audio/webm");
     }
 
     const session = getSession(userId);
     if (!session) {
-      return NextResponse.json(
-        { error: "Session not found. Call /start first." },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Session not found. Call /start first." }, { status: 404 });
     }
-
-    const arrayBuffer = await audioFile.arrayBuffer();
-    const audioBuffer = Buffer.from(arrayBuffer);
-    const userText = await speechToText(audioBuffer, audioFile.type || "audio/webm");
 
     appendMessage(userId, "user", userText);
 

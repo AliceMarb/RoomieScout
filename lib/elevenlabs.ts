@@ -24,6 +24,7 @@ export async function textToSpeech(text: string): Promise<Buffer | null> {
         text,
         model_id: TTS_MODEL,
         voice_settings: { stability: 0.5, similarity_boost: 0.75 },
+        speed: 1.2,
       }),
     }
   );
@@ -49,6 +50,7 @@ export async function speechToText(
   const blob = new Blob([audioBuffer], { type: mimeType });
   formData.append("file", blob, "recording.webm");
   formData.append("model_id", STT_MODEL);
+  formData.append("tag_audio_events", "false");
 
   const response = await fetch("https://api.elevenlabs.io/v1/speech-to-text", {
     method: "POST",
