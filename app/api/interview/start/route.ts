@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { SCOUT_INTRO } from "@/lib/interview";
+import { SCOUT_INTRO, SCOUT_INTRO_SPOKEN } from "@/lib/interview";
 import { textToSpeech } from "@/lib/elevenlabs";
 import { createInitialInterviewState, getNextQuestion } from "@/lib/agents";
 import type { Message } from "@/lib/transcriptStore";
@@ -20,7 +20,9 @@ export async function POST(req: Request) {
     transcript.push({ speaker: "ai", text: SCOUT_INTRO });
     transcript.push({ speaker: "ai", text: result.question, domain: result.domain });
 
-    const audioBuffer = tts ? await textToSpeech(result.question) : null;
+    const audioBuffer = tts
+      ? await textToSpeech(`${SCOUT_INTRO_SPOKEN} ${result.question}`)
+      : null;
 
     return NextResponse.json({
       intro: SCOUT_INTRO,

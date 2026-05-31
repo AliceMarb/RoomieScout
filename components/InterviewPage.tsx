@@ -123,8 +123,9 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
 
       interviewStateRef.current = data.interviewState;
       serverTranscriptRef.current = data.transcript;
-      if (data.intro) addMessage("ai", data.intro);
-      addMessage("ai", data.question, data.domain);
+      // Show the intro and the first question together so the Homi intro text
+      // is visible on the orb (it would otherwise be overwritten instantly).
+      addMessage("ai", data.intro ? `${data.intro} ${data.question}` : data.question, data.domain);
       if (data.audio) {
         await playAudioWithState(data.audio);
       }
