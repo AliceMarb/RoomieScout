@@ -1,4 +1,4 @@
-import SubmitForm from "@/components/SubmitForm";
+import StartMatchingForm from "@/components/StartMatchingForm";
 
 export default function HomePage() {
   return (
@@ -7,12 +7,12 @@ export default function HomePage() {
         <header className="mb-8">
           <h1 className="text-2xl font-semibold text-slate-900">RoomieScout</h1>
           <p className="text-sm text-slate-500">
-            Enter some text and submit to call the backend.
+            Start a new roommate compatibility test by talking to our AI.
           </p>
         </header>
 
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <SubmitForm />
+          <StartMatchingForm />
         </section>
       </div>
     </main>

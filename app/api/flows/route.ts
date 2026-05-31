@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { processSubmission } from "@/lib/business-logic";
+import { createFlow } from "@/lib/store";
 
+// POST /api/flows — create a new matching flow from the initiator's input.
 export async function POST(request: Request) {
   let body: { text?: unknown };
   try {
@@ -14,6 +15,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "text is required" }, { status: 400 });
   }
 
-  const result = await processSubmission({ text });
-  return NextResponse.json(result);
+  const flow = createFlow(text);
+  return NextResponse.json({ flowId: flow.id });
 }
