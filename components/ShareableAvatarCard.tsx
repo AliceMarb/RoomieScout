@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Persona } from "@/lib/business-logic";
 import { getAvatarPublicPath } from "@/lib/avatar-paths";
 import { getHmtiAvatarMeta } from "@/lib/hmti-avatars";
@@ -20,6 +20,14 @@ export default function ShareableAvatarCard({
   const [sharing, setSharing] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [useGeneratedArt, setUseGeneratedArt] = useState(true);
+  // Resolve the Web Share availability only after mount so the first client
+  // render matches the server (both show "Copy card text"), avoiding a
+  // hydration mismatch.
+  const [canShare, setCanShare] = useState(false);
+
+  useEffect(() => {
+    setCanShare(typeof navigator !== "undefined" && "share" in navigator);
+  }, []);
   const meta = getHmtiAvatarMeta(persona.code);
   const generatedSrc = getAvatarPublicPath(persona.code);
   const { palette } = meta;
@@ -196,11 +204,7 @@ export default function ShareableAvatarCard({
           disabled={sharing}
           className="rounded-full bg-slate-900 px-5 py-2 text-sm font-medium text-white shadow-sm hover:bg-slate-800 disabled:opacity-60"
         >
-          {sharing
-            ? "Sharing…"
-            : typeof navigator !== "undefined" && "share" in navigator
-              ? "Share your type"
-              : "Copy card text"}
+          {sharing ? "Sharing…" : canShare ? "Share your type" : "Copy card text"}
         </button>
       </div>
     </div>
