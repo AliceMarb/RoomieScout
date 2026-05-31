@@ -13,7 +13,7 @@ export function initWeave(): Promise<void> {
     if (!process.env.WANDB_API_KEY) return;
     try {
       const weave = await import("weave");
-      await weave.init("alice-marbach-audible/RoomieScout");
+      await weave.init("alice-marbach-audible/Homi");
       _op = weave.op as typeof _op;
       console.log("[weave] Tracing initialized");
     } catch (err) {

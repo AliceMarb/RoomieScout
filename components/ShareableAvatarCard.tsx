@@ -34,7 +34,7 @@ export default function ShareableAvatarCard({
       `Superpower: ${meta.roommateSuperpower}`,
       `Best matches: ${meta.bestMatches.join(", ")}`,
       "",
-      "My Housemate Type on RoomieScout",
+      "My Housemate Type on Homi",
     ].join("\n");
 
     const nav = typeof window !== "undefined" ? window.navigator : undefined;
@@ -74,7 +74,7 @@ export default function ShareableAvatarCard({
 
         <div className="relative flex h-full flex-col px-5 pb-5 pt-5">
           <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500/80">
-            RoomieScout · HMTI
+            Homi · HMTI
           </p>
           <p
             className="font-mono text-4xl font-black tracking-[0.15em]"

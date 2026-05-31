@@ -15,7 +15,7 @@ const sans = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "RoomieScout — Find your Housemate Type",
+  title: "Homi — Find your Housemate Type",
   description:
     "An AI roommate compatibility test. Discover your Housemate Type (HMTI) and see how you match.",
 };

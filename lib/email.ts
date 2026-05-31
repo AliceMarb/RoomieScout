@@ -20,14 +20,14 @@ export async function sendResultsEmail({
 
   console.log(`[email] Sending results email to ${to} for flow ${flowId}`);
   await transporter.sendMail({
-    from: `"RoomieScout" <${process.env.EMAIL_USER}>`,
+    from: `"Homi" <${process.env.EMAIL_USER}>`,
     to,
     subject: "Your roommate compatibility results are ready 🏠",
     html: `
       <div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:32px 16px;color:#0f172a">
         <h1 style="font-size:22px;font-weight:600;margin-bottom:8px">Your results are in!</h1>
         <p style="color:#475569;margin-bottom:24px">
-          Your potential roommate has completed their RoomieScout interview.
+          Your potential roommate has completed their Homi interview.
           See how compatible you are:
         </p>
         <a href="${resultsUrl}"
@@ -36,7 +36,7 @@ export async function sendResultsEmail({
           View compatibility results →
         </a>
         <p style="margin-top:32px;font-size:12px;color:#94a3b8">
-          RoomieScout · You're receiving this because you requested a notification.
+          Homi · You're receiving this because you requested a notification.
         </p>
       </div>
     `,

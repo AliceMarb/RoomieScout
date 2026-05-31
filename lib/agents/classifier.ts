@@ -12,7 +12,7 @@ type HmtiClassification = {
   rules: { pole: "D" | "L"; strength: number };
 };
 
-const CLASSIFIER_PROMPT = `You are the HMTI (Housemate Type Indicator) classifier for RoomieScout. Based on a full interview transcript, classify this person on four roommate compatibility axes.
+const CLASSIFIER_PROMPT = `You are the HMTI (Housemate Type Indicator) classifier for Homi. Based on a full interview transcript, classify this person on four roommate compatibility axes.
 
 THE FOUR AXES:
 
