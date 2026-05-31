@@ -17,5 +17,7 @@ export async function GET(
   return NextResponse.json({
     status,
     result: status === "completed" ? flow.result : undefined,
+    initiatorPersona: status === "completed" ? flow.initiatorPersona : undefined,
+    roommatePersona: status === "completed" ? flow.roommatePersona : undefined,
   });
 }

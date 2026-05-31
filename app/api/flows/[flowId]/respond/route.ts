@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server";
-import { computeCompatibility } from "@/lib/business-logic";
+import { computeCompatibility, computePersona } from "@/lib/business-logic";
+import type { Persona } from "@/lib/business-logic";
 import { getFlow, updateFlow } from "@/lib/store";
 import { sendResultsEmail } from "@/lib/email";
 
 const PROCESSING_DELAY_MS = 2500;
 
-// POST /api/flows/[flowId]/respond — the roommate submits their input.
-// Computes the result and notifies the initiator.
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ flowId: string }> },
@@ -17,21 +16,22 @@ export async function POST(
     return NextResponse.json({ error: "Flow not found" }, { status: 404 });
   }
 
-  let body: { text?: unknown };
+  let body: { text?: unknown; persona?: Persona };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const text = typeof body.text === "string" ? body.text.trim() : "";
-  if (!text) {
-    return NextResponse.json({ error: "text is required" }, { status: 400 });
+  const roommatePersona = body.persona ?? (typeof body.text === "string" ? computePersona(body.text.trim()) : null);
+  if (!roommatePersona) {
+    return NextResponse.json({ error: "text or persona is required" }, { status: 400 });
   }
 
-  const result = computeCompatibility(flow.initiatorInput, text);
+  const result = computeCompatibility(flow.initiatorPersona, roommatePersona);
   updateFlow(flowId, {
-    roommateInput: text,
+    roommateInput: typeof body.text === "string" ? body.text.trim() : "",
+    roommatePersona,
     result,
     resultsReadyAt: Date.now() + PROCESSING_DELAY_MS,
   });

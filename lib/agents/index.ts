@@ -6,7 +6,5 @@ export type {
   InterviewState,
   SpecialistResponse,
   OrchestratorDecision,
-  Persona,
-  PersonaResult,
 } from "./types";
 export { ALL_DOMAINS } from "./types";
