@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { DEFAULT_USER_ID, DEBUG_AGENTS } from "@/lib/config";
 
 type Message = { speaker: "ai" | "user"; text: string; domain?: string };
@@ -13,8 +14,6 @@ type StartResponse = {
   done: boolean;
 };
 
-type Persona = { type: string; weight: number; rationale: string };
-
 type RespondResponse = {
   comment?: string;
   question?: string;
@@ -23,10 +22,11 @@ type RespondResponse = {
   audio?: string | null;
   done: boolean;
   transcript?: Message[];
-  personas?: Persona[];
+  redirectTo?: string;
 };
 
-export default function InterviewPage() {
+export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
+  const router = useRouter();
   const [started, setStarted] = useState(false);
   const [done, setDone] = useState(false);
   const [recording, setRecording] = useState(false);
@@ -34,7 +34,6 @@ export default function InterviewPage() {
   const [status, setStatus] = useState("Waiting for question…");
   const [canRecord, setCanRecord] = useState(false);
   const [transcript, setTranscript] = useState<Message[]>([]);
-  const [personas, setPersonas] = useState<Persona[]>([]);
   const [userId, setUserId] = useState(DEFAULT_USER_ID);
   const [textInput, setTextInput] = useState("");
   const [ttsEnabled, setTtsEnabled] = useState(false);
@@ -92,7 +91,7 @@ export default function InterviewPage() {
       const data = await fetchJSON<StartResponse>("/api/interview/start", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: uid, tts: ttsEnabled }),
+        body: JSON.stringify({ userId: uid, tts: ttsEnabled, ...(flowId && { flowId }) }),
       });
 
       if (data.intro) addMessage("ai", data.intro);
@@ -116,9 +115,11 @@ export default function InterviewPage() {
       if (data.comment) addMessage("ai", data.comment);
       if (data.question) addMessage("ai", data.question);
       if (data.audio) await playBase64Audio(data.audio);
-      if (data.personas) setPersonas(data.personas);
       setDone(true);
-      setStatus("Interview complete! Thanks.");
+      setStatus("Interview complete! Redirecting…");
+      if (data.redirectTo) {
+        setTimeout(() => router.push(data.redirectTo!), 2000);
+      }
     } else {
       if (data.comment) addMessage("ai", data.comment);
       if (data.question) addMessage("ai", data.question, data.domain);
@@ -274,31 +275,6 @@ export default function InterviewPage() {
                   <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.3s]" />
                   <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.15s]" />
                   <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400" />
-                </div>
-              </div>
-            )}
-
-            {done && personas.length > 0 && (
-              <div className="mt-10">
-                <h2 className="mb-4 text-center text-lg font-semibold text-slate-900">
-                  Your Roommate Persona
-                </h2>
-                <div className="space-y-3">
-                  {personas.map((p, i) => (
-                    <div key={i} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                      <div className="mb-2 flex items-center justify-between">
-                        <span className="text-sm font-semibold text-slate-900">{p.type}</span>
-                        <span className="text-sm font-bold text-slate-700">{p.weight}%</span>
-                      </div>
-                      <div className="mb-2 h-2 overflow-hidden rounded-full bg-slate-100">
-                        <div
-                          className="h-full rounded-full bg-slate-900 transition-all duration-500"
-                          style={{ width: `${p.weight}%` }}
-                        />
-                      </div>
-                      <p className="text-xs leading-relaxed text-slate-500">{p.rationale}</p>
-                    </div>
-                  ))}
                 </div>
               </div>
             )}
