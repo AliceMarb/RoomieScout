@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { DEBUG_AGENTS } from "@/lib/config";
-import { SCOUT_INTRO } from "@/lib/interview";
 import { Wordmark, cn } from "@/components/ui";
 
 type Message = { speaker: "ai" | "user"; text: string; domain?: string };
@@ -272,9 +271,12 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
   if (mode === "voice") {
     return (
       <main className="flex h-dvh flex-col bg-paper bg-grid">
-        <header className="shrink-0 flex items-center justify-between px-5 py-4">
-          <Wordmark />
-          <div className="flex items-center gap-2">
+        <header className="shrink-0 px-5 pt-6 pb-2 text-center">
+          <h1 className="font-display text-2xl font-bold tracking-tight text-ink">RoomieScout</h1>
+          <p className="mx-auto mt-2 max-w-xs text-sm leading-snug text-ink-soft">
+            A quick voice chat to find your perfect roommate match. Just be yourself.
+          </p>
+          <div className="mt-3 flex items-center justify-center gap-3">
             <button
               onClick={() => {
                 if (!ttsEnabled && !window.confirm("This uses ElevenLabs credits. Only turn on with intention — turn off when done testing.")) return;
@@ -298,13 +300,10 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
         </header>
 
         <div className="flex flex-1 flex-col items-center justify-center px-6">
-          {/* Intro + current question */}
-          <div className="mb-10 max-w-sm text-center">
-            <p className="text-xs leading-relaxed text-ink-faint">
-              {SCOUT_INTRO}
-            </p>
+          {/* Current question */}
+          <div className="mb-10 min-h-[2rem] max-w-sm text-center">
             {lastAiMessage && (
-              <p className="mt-4 text-sm font-medium leading-relaxed text-ink transition-opacity duration-500">
+              <p className="text-sm font-medium leading-relaxed text-ink transition-opacity duration-500">
                 {lastAiMessage}
               </p>
             )}
