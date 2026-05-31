@@ -1,4 +1,4 @@
-import { openai, MODEL } from "@/lib/openai";
+import { getOpenAI, MODEL } from "@/lib/openai";
 import { getSpecialistPrompt } from "./prompts";
 import type { AgentDomain, AgentState, SpecialistResponse } from "./types";
 import type { Message } from "@/lib/transcriptStore";
@@ -26,7 +26,7 @@ YOUR STATE:
 Generate your next question or signal satisfaction.`;
 
   try {
-    const completion = await openai.chat.completions.create({
+    const completion = await getOpenAI().chat.completions.create({
       model: MODEL,
       response_format: { type: "json_object" },
       messages: [

@@ -1,4 +1,4 @@
-import { openai, MODEL } from "@/lib/openai";
+import { getOpenAI, MODEL } from "@/lib/openai";
 import { ORCHESTRATOR_PROMPT } from "./prompts";
 import { getSpecialistQuestion } from "./specialist";
 import type { AgentDomain, InterviewState, OrchestratorDecision } from "./types";
@@ -56,7 +56,7 @@ TOTAL TURNS SO FAR: ${state.turnCount}
 Pick the next domain or end the interview.`;
 
   try {
-    const completion = await openai.chat.completions.create({
+    const completion = await getOpenAI().chat.completions.create({
       model: MODEL,
       response_format: { type: "json_object" },
       messages: [

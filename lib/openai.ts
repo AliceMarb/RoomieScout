@@ -1,7 +1,12 @@
 import OpenAI from "openai";
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-
 export const MODEL = "gpt-5.4-mini";
 
-export const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
+let _client: OpenAI | null = null;
+
+export function getOpenAI(): OpenAI {
+  if (!_client) {
+    _client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+  return _client;
+}
