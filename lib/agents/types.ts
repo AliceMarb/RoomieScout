@@ -32,3 +32,13 @@ export type InterviewState = {
   currentAgentDomain: AgentDomain | null;
   isComplete: boolean;
 };
+
+export type Persona = {
+  type: string;
+  weight: number;
+  rationale: string;
+};
+
+export type PersonaResult = {
+  personas: Persona[];
+};

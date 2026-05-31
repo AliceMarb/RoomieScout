@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { SCOUT_CLOSING } from "@/lib/interview";
 import { getSession, appendMessage, advanceQuestion } from "@/lib/transcriptStore";
 import { speechToText, textToSpeech } from "@/lib/elevenlabs";
-import { getNextQuestion } from "@/lib/agents";
+import { getNextQuestion, classifyPersona } from "@/lib/agents";
 
 export async function POST(req: Request) {
   try {
@@ -40,7 +40,11 @@ export async function POST(req: Request) {
 
     if ("done" in result) {
       appendMessage(userId, "ai", SCOUT_CLOSING);
-      const closingAudio = await textToSpeech(SCOUT_CLOSING);
+
+      const [closingAudio, personaResult] = await Promise.all([
+        textToSpeech(SCOUT_CLOSING),
+        classifyPersona(session.transcript),
+      ]);
 
       return NextResponse.json({
         done: true,
@@ -48,6 +52,7 @@ export async function POST(req: Request) {
         question: SCOUT_CLOSING,
         userTranscript: userText,
         audio: closingAudio ? closingAudio.toString("base64") : null,
+        personas: personaResult.personas,
       });
     }
 
