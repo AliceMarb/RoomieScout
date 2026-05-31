@@ -6,11 +6,17 @@ import { DEFAULT_USER_ID, DEBUG_AGENTS } from "@/lib/config";
 
 type Message = { speaker: "ai" | "user"; text: string; domain?: string };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type InterviewState = any;
+
 type StartResponse = {
   intro: string;
   question: string;
   domain?: string;
   audio: string | null;
+  interviewState: InterviewState;
+  transcript: Message[];
+  flowId?: string | null;
   done: boolean;
 };
 
@@ -22,6 +28,7 @@ type RespondResponse = {
   audio?: string | null;
   done: boolean;
   transcript?: Message[];
+  interviewState?: InterviewState;
   redirectTo?: string;
 };
 
@@ -38,6 +45,8 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
   const [textInput, setTextInput] = useState("");
   const [ttsEnabled, setTtsEnabled] = useState(false);
   const [scoutThinking, setScoutThinking] = useState(false);
+  const interviewStateRef = useRef<InterviewState>(null);
+  const serverTranscriptRef = useRef<Message[]>([]);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -91,9 +100,11 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
       const data = await fetchJSON<StartResponse>("/api/interview/start", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: uid, tts: ttsEnabled, ...(flowId && { flowId }) }),
+        body: JSON.stringify({ tts: ttsEnabled, ...(flowId && { flowId }) }),
       });
 
+      interviewStateRef.current = data.interviewState;
+      serverTranscriptRef.current = data.transcript;
       if (data.intro) addMessage("ai", data.intro);
       addMessage("ai", data.question, data.domain);
       if (data.audio) {
@@ -109,6 +120,8 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
 
   async function afterRespond(data: RespondResponse) {
     setScoutThinking(false);
+    if (data.interviewState) interviewStateRef.current = data.interviewState;
+    if (data.transcript) serverTranscriptRef.current = data.transcript;
     if (data.userTranscript) addMessage("user", data.userTranscript);
 
     if (data.done) {
@@ -164,9 +177,11 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
     const mimeType = mediaRecorderRef.current!.mimeType || "audio/webm";
     const blob = new Blob(audioChunksRef.current, { type: mimeType });
     const formData = new FormData();
-    formData.append("userId", userId);
     formData.append("audio", blob, "recording.webm");
     formData.append("tts", String(ttsEnabled));
+    formData.append("interviewState", JSON.stringify(interviewStateRef.current));
+    formData.append("transcript", JSON.stringify(serverTranscriptRef.current));
+    if (flowId) formData.append("flowId", flowId);
 
     try {
       const data = await fetchJSON<RespondResponse>("/api/interview/respond", {
@@ -196,7 +211,13 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
       const data = await fetchJSON<RespondResponse>("/api/interview/respond", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, text, tts: ttsEnabled }),
+        body: JSON.stringify({
+          text,
+          tts: ttsEnabled,
+          interviewState: interviewStateRef.current,
+          transcript: serverTranscriptRef.current,
+          ...(flowId && { flowId }),
+        }),
       });
       await afterRespond(data);
     } catch (err) {
