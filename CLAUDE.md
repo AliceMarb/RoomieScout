@@ -52,11 +52,13 @@ A `flowId` threads four pages together; this half has **not** been wired to the 
 - `lib/business-logic.ts` — **deterministic hash-based placeholders**: `computeCompatibility()` (score + categories) and `computePersona()` (the 16-type HMTI built from 4 binary axes). Same inputs → same output. `CompatibilityResult` and `Persona` here are the shared contracts imported by the flow routes, `ResultsView`, and `PersonaCard` — change the shape here, not in copies.
 
 ### The open seam (most likely next work)
-System 1 produces real transcripts + personas; system 2's result still comes from `computeCompatibility(initiatorInput, roommateInput)` over placeholder strings. Connecting them — feeding interview transcripts/personas into the flow and replacing the hash stubs — is the central unfinished integration. Stubs are marked `TODO`: `JoinForm`, `StartMatchingForm`, `business-logic.ts`, the email `console.log` in `app/api/flows/[flowId]/respond/route.ts`, and both stores.
+System 1 produces real transcripts + personas; system 2's result still comes from `computeCompatibility(initiatorInput, roommateInput)` over placeholder strings. Connecting them — feeding interview transcripts/personas into the flow and replacing the hash stubs — is the central unfinished integration. Stubs are marked `TODO`: `JoinForm` and `StartMatchingForm` (raw `Textarea`s instead of voice interview), `business-logic.ts` (hash placeholders), and both stores.
+
+### Email (now live)
+`lib/email.ts` (`sendResultsEmail`) is real: Nodemailer over Gmail, gated on `EMAIL_USER`/`EMAIL_PASS`, throwing if unset. The flow respond route fires it best-effort (`.catch` logs, never blocks the response) once a roommate submits, but only if `SharePanel` saved an `initiatorEmail` first. The results link is built from `NEXT_PUBLIC_APP_URL`. Note: `resend` is in `package.json` but unused — Nodemailer is the live path.
 
 ### Conventions
 - **API route pattern:** parse JSON (400 on bad body), check the resource exists (404), then act. LLM/agent calls always carry a fallback.
 - **Both stores are in-memory only** — lost on restart, not shared across serverless instances. `TODO` swap for a DB.
 - `@/*` resolves to the repo root (`tsconfig.json`); imports use `@/lib/...`, `@/components/...`.
-- Env vars go in `.env.local` (`OPENAI_API_KEY`, `ELEVENLABS_API_KEY`, optional `ELEVENLABS_VOICE_ID`, debug flags). Template: `.env.local.example`.
-- **README caveat:** its "Email setup (Gmail)" section describes Nodemailer + `lib/email.ts`, but that file and the `nodemailer` dependency don't exist — email is still a `console.log` TODO. Treat that section as aspirational.
+- Env vars go in `.env.local`. Required: `OPENAI_API_KEY`, `ELEVENLABS_API_KEY`. Email: `EMAIL_USER`, `EMAIL_PASS` (Gmail app password), `NEXT_PUBLIC_APP_URL`. Optional: `ELEVENLABS_VOICE_ID`. Debug flags are client-side, so they carry the `NEXT_PUBLIC_` prefix in the environment (`NEXT_PUBLIC_DEBUG_TTS`/`_STT`/`_AGENTS`, `NEXT_PUBLIC_DEFAULT_USER_ID`) even though `lib/config.ts` re-exports them as `DEBUG_TTS`/etc. Template: `.env.local.example`.
