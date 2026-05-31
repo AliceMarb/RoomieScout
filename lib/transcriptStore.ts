@@ -12,6 +12,7 @@ export type Session = {
   transcript: Message[];
   currentQuestionIndex: number;
   interviewState: InterviewState;
+  flowId?: string;
 };
 
 // Attach to globalThis so Next.js hot-module-reload doesn't wipe the Map between requests
@@ -23,8 +24,8 @@ export function getSession(userId: string): Session | null {
   return sessions.get(userId) ?? null;
 }
 
-export function createSession(userId: string, interviewState: InterviewState): Session {
-  const session: Session = { transcript: [], currentQuestionIndex: 0, interviewState };
+export function createSession(userId: string, interviewState: InterviewState, flowId?: string): Session {
+  const session: Session = { transcript: [], currentQuestionIndex: 0, interviewState, ...(flowId && { flowId }) };
   sessions.set(userId, session);
   return session;
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { DEFAULT_USER_ID, DEBUG_AGENTS } from "@/lib/config";
 
 type Message = { speaker: "ai" | "user"; text: string; domain?: string };
@@ -13,8 +14,6 @@ type StartResponse = {
   done: boolean;
 };
 
-type Persona = { type: string; weight: number; rationale: string };
-
 type RespondResponse = {
   comment?: string;
   question?: string;
@@ -23,10 +22,11 @@ type RespondResponse = {
   audio?: string | null;
   done: boolean;
   transcript?: Message[];
-  personas?: Persona[];
+  redirectTo?: string;
 };
 
-export default function InterviewPage() {
+export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
+  const router = useRouter();
   const [started, setStarted] = useState(false);
   const [done, setDone] = useState(false);
   const [recording, setRecording] = useState(false);
@@ -34,7 +34,6 @@ export default function InterviewPage() {
   const [status, setStatus] = useState("Waiting for question…");
   const [canRecord, setCanRecord] = useState(false);
   const [transcript, setTranscript] = useState<Message[]>([]);
-  const [personas, setPersonas] = useState<Persona[]>([]);
   const [userId, setUserId] = useState(DEFAULT_USER_ID);
   const [textInput, setTextInput] = useState("");
   const [ttsEnabled, setTtsEnabled] = useState(false);
@@ -49,6 +48,14 @@ export default function InterviewPage() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [transcript]);
+
+  const startedRef = useRef(false);
+  useEffect(() => {
+    if (startedRef.current) return;
+    startedRef.current = true;
+    handleStart();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function addMessage(speaker: "ai" | "user", text: string, domain?: string) {
     setTranscript((prev) => [...prev, { speaker, text, ...(domain && { domain }) }]);
@@ -74,16 +81,8 @@ export default function InterviewPage() {
   }
 
   async function handleStart() {
-    // No name/ID step — sessions just need a stable key, so mint one.
     const uid = userId.trim() || crypto.randomUUID();
     if (uid !== userId) setUserId(uid);
-
-    try {
-      streamRef.current = await navigator.mediaDevices.getUserMedia({ audio: true });
-    } catch {
-      alert("Microphone access is required.");
-      return;
-    }
 
     setStarted(true);
     setStatus("Starting…");
@@ -92,7 +91,7 @@ export default function InterviewPage() {
       const data = await fetchJSON<StartResponse>("/api/interview/start", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: uid, tts: ttsEnabled }),
+        body: JSON.stringify({ userId: uid, tts: ttsEnabled, ...(flowId && { flowId }) }),
       });
 
       if (data.intro) addMessage("ai", data.intro);
@@ -116,9 +115,11 @@ export default function InterviewPage() {
       if (data.comment) addMessage("ai", data.comment);
       if (data.question) addMessage("ai", data.question);
       if (data.audio) await playBase64Audio(data.audio);
-      if (data.personas) setPersonas(data.personas);
       setDone(true);
-      setStatus("Interview complete! Thanks.");
+      setStatus("Interview complete! Redirecting…");
+      if (data.redirectTo) {
+        setTimeout(() => router.push(data.redirectTo!), 2000);
+      }
     } else {
       if (data.comment) addMessage("ai", data.comment);
       if (data.question) addMessage("ai", data.question, data.domain);
@@ -132,6 +133,14 @@ export default function InterviewPage() {
   }
 
   async function handleRecordStart() {
+    if (!streamRef.current) {
+      try {
+        streamRef.current = await navigator.mediaDevices.getUserMedia({ audio: true });
+      } catch {
+        alert("Microphone access is required for voice input.");
+        return;
+      }
+    }
     audioChunksRef.current = [];
     const recorder = new MediaRecorder(streamRef.current!);
     recorder.ondataavailable = (e) => audioChunksRef.current.push(e.data);
@@ -226,90 +235,51 @@ export default function InterviewPage() {
         </button>
       </header>
 
-      {!started && (
-        <div className="flex flex-1 flex-col items-center justify-center gap-3">
-          <button
-            onClick={handleStart}
-            className="rounded-md bg-slate-900 px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-slate-800"
-          >
-            Start talking with Scout
-          </button>
-        </div>
-      )}
+      <div className="flex-1 overflow-y-auto px-4 py-4 pb-32">
+        <div className="mx-auto max-w-xl space-y-3">
+          {transcript.map((msg, i) => {
+            const agentStyle = DEBUG_AGENTS && msg.domain ? domainColors[msg.domain] : null;
 
-      {started && (
-        <div className="flex-1 overflow-y-auto px-4 py-4 pb-32">
-          <div className="mx-auto max-w-xl space-y-3">
-            {transcript.map((msg, i) => {
-              const agentStyle = DEBUG_AGENTS && msg.domain ? domainColors[msg.domain] : null;
-
-              return (
-                <div key={i} className={`flex flex-col ${msg.speaker === "ai" ? "items-start" : "items-end"}`}>
-                  <div className="mb-1 flex items-center gap-2">
-                    <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-                      {msg.speaker === "ai" ? "Scout" : "You"}
+            return (
+              <div key={i} className={`flex flex-col ${msg.speaker === "ai" ? "items-start" : "items-end"}`}>
+                <div className="mb-1 flex items-center gap-2">
+                  <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+                    {msg.speaker === "ai" ? "Scout" : "You"}
+                  </span>
+                  {agentStyle && (
+                    <span className={`rounded-full px-2 py-0.5 text-[9px] font-semibold ${agentStyle.badge}`}>
+                      {agentStyle.label}
                     </span>
-                    {agentStyle && (
-                      <span className={`rounded-full px-2 py-0.5 text-[9px] font-semibold ${agentStyle.badge}`}>
-                        {agentStyle.label}
-                      </span>
-                    )}
-                  </div>
-                  <div className={[
-                    "max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
-                    msg.speaker === "ai"
-                      ? `rounded-bl-sm bg-white text-slate-800 border-2 ${agentStyle ? agentStyle.border : "border-slate-200"}`
-                      : "rounded-br-sm bg-slate-900 text-white",
-                  ].join(" ")}>
-                    {msg.text}
-                  </div>
+                  )}
                 </div>
-              );
-            })}
-
-            {scoutThinking && (
-              <div className="flex flex-col items-start">
-                <span className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Scout</span>
-                <div className="flex items-center gap-1 rounded-2xl rounded-bl-sm border border-slate-200 bg-white px-4 py-3">
-                  <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.3s]" />
-                  <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.15s]" />
-                  <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400" />
+                <div className={[
+                  "max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
+                  msg.speaker === "ai"
+                    ? `rounded-bl-sm bg-white text-slate-800 border-2 ${agentStyle ? agentStyle.border : "border-slate-200"}`
+                    : "rounded-br-sm bg-slate-900 text-white",
+                ].join(" ")}>
+                  {msg.text}
                 </div>
               </div>
-            )}
+            );
+          })}
 
-            {done && personas.length > 0 && (
-              <div className="mt-10">
-                <h2 className="mb-4 text-center text-lg font-semibold text-slate-900">
-                  Your Roommate Persona
-                </h2>
-                <div className="space-y-3">
-                  {personas.map((p, i) => (
-                    <div key={i} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-                      <div className="mb-2 flex items-center justify-between">
-                        <span className="text-sm font-semibold text-slate-900">{p.type}</span>
-                        <span className="text-sm font-bold text-slate-700">{p.weight}%</span>
-                      </div>
-                      <div className="mb-2 h-2 overflow-hidden rounded-full bg-slate-100">
-                        <div
-                          className="h-full rounded-full bg-slate-900 transition-all duration-500"
-                          style={{ width: `${p.weight}%` }}
-                        />
-                      </div>
-                      <p className="text-xs leading-relaxed text-slate-500">{p.rationale}</p>
-                    </div>
-                  ))}
-                </div>
+          {scoutThinking && (
+            <div className="flex flex-col items-start">
+              <span className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400">Scout</span>
+              <div className="flex items-center gap-1 rounded-2xl rounded-bl-sm border border-slate-200 bg-white px-4 py-3">
+                <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.3s]" />
+                <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400 [animation-delay:-0.15s]" />
+                <span className="h-2 w-2 animate-bounce rounded-full bg-slate-400" />
               </div>
-            )}
+            </div>
+          )}
 
-            <div ref={bottomRef} />
-          </div>
+          <div ref={bottomRef} />
         </div>
-      )}
+      </div>
 
-      {started && (
-        <div className="fixed bottom-0 left-0 right-0 border-t border-slate-200 bg-white px-4 py-3 shadow-md">
+      <div className="fixed bottom-0 left-0 right-0 border-t border-slate-200 bg-white px-4 py-3 shadow-md">
           <div className="mx-auto flex max-w-xl items-center gap-2">
             <input
               className="flex-1 rounded-full border border-slate-300 px-4 py-2 text-sm focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900 disabled:opacity-40"
@@ -350,7 +320,6 @@ export default function InterviewPage() {
           </div>
           <p className="mt-1.5 text-center text-xs text-slate-400">{status}</p>
         </div>
-      )}
 
       <audio ref={playerRef} className="hidden" />
     </main>

@@ -20,9 +20,6 @@ export type Persona = {
   axes: PersonaAxis[]; // exactly 4 spectrum axes
 };
 
-const CATEGORIES = ["Cleanliness", "Schedule", "Social", "Budget"];
-
-// Simple deterministic string hash so the same inputs always yield the same score.
 function hash(value: string): number {
   let h = 0;
   for (let i = 0; i < value.length; i++) {
@@ -31,29 +28,34 @@ function hash(value: string): number {
   return h;
 }
 
+const AXIS_WEIGHTS = [35, 30, 15, 20]; // cleanliness, social, rhythm, rules
+
 /**
- * Compute the compatibility result between the two participants.
- *
- * TODO: replace this deterministic placeholder with the real AI compatibility
- * assessment that reasons over both participants' answers.
+ * Compute HMTI compatibility between two personas.
+ * Same axis pole = full weight. Different = 0.
  */
 export function computeCompatibility(
-  initiatorInput: string,
-  roommateInput: string,
+  personaA: Persona,
+  personaB: Persona,
 ): CompatibilityResult {
-  const categories = CATEGORIES.map((name) => ({
-    name,
-    score: 50 + (hash(name + initiatorInput + roommateInput) % 51), // 50-100
-  }));
-  const score = Math.round(
-    categories.reduce((sum, c) => sum + c.score, 0) / categories.length,
-  );
-  const summary =
-    score >= 80
-      ? "You two look like a great match!"
-      : score >= 65
-        ? "Solid potential — worth a conversation."
-        : "Some differences to talk through before moving in.";
+  const categories = personaA.axes.map((axisA, i) => {
+    const axisB = personaB.axes[i];
+    const match = axisA.chosen === axisB.chosen;
+    return {
+      name: axisA.name,
+      score: match ? AXIS_WEIGHTS[i] : 0,
+    };
+  });
+
+  const score = categories.reduce((sum, c) => sum + c.score, 0);
+
+  let summary: string;
+  if (score >= 85) summary = "Excellent match — you two are very compatible housemates.";
+  else if (score >= 70) summary = "Strong match — good compatibility with manageable differences.";
+  else if (score >= 55) summary = "Moderate match — some areas to discuss before moving in.";
+  else if (score >= 40) summary = "Risky match — several likely friction points to work through.";
+  else summary = "Challenging match — significant lifestyle differences to navigate.";
+
   return { score, categories, summary };
 }
 
@@ -108,25 +110,33 @@ const HMTI_TYPES: Record<string, { title: string; emoji: string; description: st
 };
 
 /**
- * Build a Housemate Type Indicator (HMTI) persona from a participant's input.
- *
- * TODO: replace this deterministic placeholder with a real AI-generated
- * assessment that reasons over the participant's answers.
+ * Build an HMTI Persona from axis choices (used by the AI classifier).
  */
-export function computePersona(input: string): Persona {
-  const axes: PersonaAxis[] = HMTI_AXES.map((axis) => {
-    const leansLeft = hash(input + axis.salt) % 2 === 0;
-    return {
-      name: axis.name,
-      left: axis.a.trait,
-      right: axis.b.trait,
-      chosen: leansLeft ? "left" : "right",
-      strength: 55 + (hash(input + axis.salt + "s") % 41), // 55-95
-    };
-  });
+export function buildPersonaFromAxes(
+  choices: Array<{ chosen: "left" | "right"; strength: number }>,
+): Persona {
+  const axes: PersonaAxis[] = HMTI_AXES.map((axis, i) => ({
+    name: axis.name,
+    left: axis.a.trait,
+    right: axis.b.trait,
+    chosen: choices[i].chosen,
+    strength: choices[i].strength,
+  }));
   const code = HMTI_AXES.map((axis, i) =>
-    axes[i].chosen === "left" ? axis.a.letter : axis.b.letter,
+    choices[i].chosen === "left" ? axis.a.letter : axis.b.letter,
   ).join("");
   const { title, emoji, description } = HMTI_TYPES[code];
   return { code, title, emoji, description, axes };
+}
+
+/**
+ * Build a Housemate Type Indicator (HMTI) persona from a participant's input.
+ * Deterministic fallback — used when no AI classification is available.
+ */
+export function computePersona(input: string): Persona {
+  const choices = HMTI_AXES.map((axis) => ({
+    chosen: (hash(input + axis.salt) % 2 === 0 ? "left" : "right") as "left" | "right",
+    strength: 55 + (hash(input + axis.salt + "s") % 41),
+  }));
+  return buildPersonaFromAxes(choices);
 }

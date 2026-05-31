@@ -1,13 +1,68 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { CompatibilityResult } from "@/lib/business-logic";
+import type { CompatibilityResult, Persona } from "@/lib/business-logic";
 import { Card } from "@/components/ui";
 
 type FlowState = {
   status: "created" | "processing" | "completed" | "not_found";
   result?: CompatibilityResult;
+  initiatorPersona?: Persona;
+  roommatePersona?: Persona;
 };
+
+function PersonaCard({ persona, label }: { persona: Persona; label: string }) {
+  return (
+    <div className="flex-1 rounded-xl border border-line bg-surface p-4">
+      <p className="eyebrow">{label}</p>
+      <div className="mt-2 flex items-center gap-2">
+        <span className="text-2xl">{persona.emoji}</span>
+        <div>
+          <p className="font-display text-lg font-bold text-ink">{persona.code}</p>
+          <p className="text-xs font-medium text-ink-soft">{persona.title}</p>
+        </div>
+      </div>
+      <p className="mt-2 text-xs leading-relaxed text-ink-soft">{persona.description}</p>
+    </div>
+  );
+}
+
+function AxisComparison({ personaA, personaB }: { personaA: Persona; personaB: Persona }) {
+  return (
+    <div className="divide-y divide-line">
+      {personaA.axes.map((axisA, i) => {
+        const axisB = personaB.axes[i];
+        const match = axisA.chosen === axisB.chosen;
+        return (
+          <div key={axisA.name} className="px-6 py-4">
+            <div className="flex items-center justify-between">
+              <span className="eyebrow">{axisA.name}</span>
+              <span className={`text-[10px] font-semibold uppercase ${match ? "text-green-600" : "text-accent-ink"}`}>
+                {match ? "Match" : "Different"}
+              </span>
+            </div>
+            <div className="mt-3 flex items-center gap-3 text-xs">
+              <span className="w-16 text-right font-medium text-ink-soft">{axisA.left}</span>
+              <div className="relative flex-1 h-2 rounded-full bg-line">
+                <div
+                  className="absolute top-0 h-2 w-2 rounded-full bg-ink ring-2 ring-surface"
+                  style={{ left: `${axisA.chosen === "left" ? 100 - axisA.strength : axisA.strength}%` }}
+                  title="Person 1"
+                />
+                <div
+                  className="absolute top-0 h-2 w-2 rounded-full bg-accent ring-2 ring-surface"
+                  style={{ left: `${axisB.chosen === "left" ? 100 - axisB.strength : axisB.strength}%` }}
+                  title="Person 2"
+                />
+              </div>
+              <span className="w-16 font-medium text-ink-soft">{axisA.right}</span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 export default function ResultsView({ flowId }: { flowId: string }) {
   const [state, setState] = useState<FlowState>({ status: "processing" });
@@ -64,37 +119,69 @@ export default function ResultsView({ flowId }: { flowId: string }) {
   }
 
   const { score, categories, summary } = state.result;
+  const matchBand =
+    score >= 85 ? "Excellent Match" :
+    score >= 70 ? "Strong Match" :
+    score >= 55 ? "Moderate Match" :
+    score >= 40 ? "Risky Match" : "Poor Match";
 
   return (
-    <Card className="overflow-hidden">
-      {/* Score */}
-      <div className="px-6 pt-6">
-        <div className="rule-label">
-          <span className="eyebrow">Compatibility</span>
+    <div className="space-y-6">
+      {state.initiatorPersona && state.roommatePersona && (
+        <div className="flex gap-4">
+          <PersonaCard persona={state.initiatorPersona} label="Person 1" />
+          <PersonaCard persona={state.roommatePersona} label="Person 2" />
         </div>
-        <div className="mt-5 flex items-end gap-2">
-          <span className="font-display text-6xl font-bold leading-none text-ink tnum">
-            {score}
-          </span>
-          <span className="mb-1 font-display text-2xl font-semibold text-accent">%</span>
-        </div>
-        <p className="mt-3 text-sm leading-relaxed text-ink-soft">{summary}</p>
-      </div>
+      )}
 
-      {/* Category breakdown */}
-      <div className="mt-6 divide-y divide-line border-t border-line">
-        {categories.map((c) => (
-          <div key={c.name} className="px-6 py-4">
-            <div className="flex items-center justify-between">
-              <span className="eyebrow">{c.name}</span>
-              <span className="text-xs font-medium text-ink tnum">{c.score}%</span>
-            </div>
-            <div className="mt-3 h-px w-full bg-line">
-              <div className="h-px bg-accent" style={{ width: `${c.score}%` }} />
+      <Card className="overflow-hidden">
+        <div className="px-6 pt-6">
+          <div className="rule-label">
+            <span className="eyebrow">Compatibility</span>
+          </div>
+          <div className="mt-5 flex items-end gap-3">
+            <span className="font-display text-6xl font-bold leading-none text-ink tnum">
+              {score}
+            </span>
+            <div className="mb-1">
+              <span className="font-display text-2xl font-semibold text-accent">/100</span>
+              <p className="mt-0.5 text-xs font-medium text-ink-soft">{matchBand}</p>
             </div>
           </div>
-        ))}
-      </div>
-    </Card>
+          <p className="mt-3 text-sm leading-relaxed text-ink-soft">{summary}</p>
+        </div>
+
+        <div className="mt-6 border-t border-line">
+          {categories.map((c) => (
+            <div key={c.name} className="px-6 py-4 border-b border-line last:border-b-0">
+              <div className="flex items-center justify-between">
+                <span className="eyebrow">{c.name}</span>
+                <span className="text-xs font-medium text-ink tnum">{c.score > 0 ? `+${c.score}` : "0"}</span>
+              </div>
+              <div className="mt-3 h-px w-full bg-line">
+                <div className="h-px bg-accent" style={{ width: `${c.score}%` }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      {state.initiatorPersona && state.roommatePersona && (
+        <Card className="overflow-hidden">
+          <div className="px-6 pt-4">
+            <div className="rule-label">
+              <span className="eyebrow">Axis comparison</span>
+            </div>
+            <div className="mt-2 flex items-center gap-4 text-xs text-ink-soft">
+              <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-ink" /> Person 1</span>
+              <span className="flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-accent" /> Person 2</span>
+            </div>
+          </div>
+          <div className="mt-2">
+            <AxisComparison personaA={state.initiatorPersona} personaB={state.roommatePersona} />
+          </div>
+        </Card>
+      )}
+    </div>
   );
 }
