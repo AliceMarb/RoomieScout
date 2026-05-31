@@ -20,7 +20,7 @@ export async function POST(req: Request) {
     transcript.push({ speaker: "ai", text: SCOUT_INTRO });
     transcript.push({ speaker: "ai", text: result.question, domain: result.domain });
 
-    const audioBuffer = tts ? await textToSpeech(`${SCOUT_INTRO} ${result.question}`) : null;
+    const audioBuffer = tts ? await textToSpeech(result.question) : null;
 
     return NextResponse.json({
       intro: SCOUT_INTRO,

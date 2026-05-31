@@ -6,8 +6,8 @@ import type { AgentDomain, InterviewState, OrchestratorDecision } from "./types"
 import { ALL_DOMAINS as DOMAINS } from "./types";
 import type { Message } from "@/lib/transcriptStore";
 
-const MAX_TURNS = 12;
-const MAX_QUESTIONS_PER_AGENT = 4;
+const MAX_TURNS = 7;
+const MAX_QUESTIONS_PER_AGENT = 3;
 
 export function createInitialInterviewState(): InterviewState {
   const agentStates = {} as InterviewState["agentStates"];
