@@ -72,7 +72,9 @@ export default function InterviewPage() {
   }
 
   async function handleStart() {
-    if (!userId.trim()) { alert("Enter a name or ID first"); return; }
+    // No name/ID step — sessions just need a stable key, so mint one.
+    const uid = userId.trim() || crypto.randomUUID();
+    if (uid !== userId) setUserId(uid);
 
     try {
       streamRef.current = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -88,7 +90,7 @@ export default function InterviewPage() {
       const data = await fetchJSON<StartResponse>("/api/interview/start", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId }),
+        body: JSON.stringify({ userId: uid }),
       });
 
       if (data.intro) addMessage("ai", data.intro);
@@ -204,20 +206,11 @@ export default function InterviewPage() {
 
       {!started && (
         <div className="flex flex-1 flex-col items-center justify-center gap-3">
-          {!DEFAULT_USER_ID && (
-            <input
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
-              placeholder="Your name or ID"
-              value={userId}
-              onChange={(e) => setUserId(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleStart()}
-            />
-          )}
           <button
             onClick={handleStart}
             className="rounded-md bg-slate-900 px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-slate-800"
           >
-            Start interview
+            Start talking with Scout
           </button>
         </div>
       )}

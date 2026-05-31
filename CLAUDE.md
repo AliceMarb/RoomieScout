@@ -25,27 +25,38 @@ The UI follows one deliberate language — **Swiss functional**: warm paper canv
 
 ## Architecture
 
-RoomieScout is a Next.js 15 App Router + React 19 + TypeScript app implementing an AI roommate compatibility test. It is a 4-page flow built around a single in-memory resource (a "matching flow"). The AI interview and email/notification pieces are intentionally **stubbed with `TODO`s** — the wiring is complete end-to-end.
+RoomieScout is a Next.js 15 App Router + React 19 + TypeScript app implementing an AI roommate compatibility test. **Two subsystems run side by side and are not yet joined — understanding that seam is the key to working here:** a live multi-agent voice interview (real OpenAI + ElevenLabs), and a 4-page "matching flow" that still uses placeholder text inputs and deterministic stub scoring.
 
-### The flow (one `flowId` threads through all 4 pages)
-1. **Home `/`** (`StartMatchingForm`) — initiator's input → `POST /api/flows` → redirect to `/share/[flowId]`.
-2. **Share `/share/[flowId]`** (`SharePanel`) — initiator saves email (`POST /api/flows/[flowId]/email`) and copies the join link.
-3. **Join `/join/[flowId]`** (`JoinForm`) — roommate's input → `POST /api/flows/[flowId]/respond` (computes result, stamps `resultsReadyAt`, logs the TODO email) → redirect to `/results/[flowId]`.
-4. **Results `/results/[flowId]`** (`ResultsView`) — polls `GET /api/flows/[flowId]` every 1s; shows a processing spinner until status flips to `completed`, then the score + category breakdown.
+### 1. The voice interview (live, real AI)
+Scout interviews one person at a time through a multi-agent loop, then classifies them into roommate personas. Everything here is keyed by a free-form `userId` (**not** a flowId).
 
-### Key pieces
-- `lib/store.ts` — the source of truth: a `Map<flowId, MatchingFlow>` pinned to `globalThis` (survives dev hot-reload). **In-memory only — lost on restart, not shared across serverless instances; `TODO` swap for a DB.** Status is *derived*, not stored: `getStatus()` returns `processing` until `Date.now() >= resultsReadyAt`, then `completed`. This is what makes the polling loading screen work without background timers.
-- `lib/business-logic.ts` — `computeCompatibility(initiatorInput, roommateInput)` is the **placeholder for the real AI scoring**. It's a deterministic hash-based stub (same inputs → same score). `CompatibilityResult` is the contract shared by the respond route, the GET route, and `ResultsView`.
-- API routes live under `app/api/flows/...` and follow one validation pattern: parse JSON (400 on bad body), check the flow exists (404), then act.
+- **`components/InterviewPage.tsx`** (rendered at `/`) drives the browser: records mic audio, POSTs to the interview API, plays back Scout's TTS audio, renders the running transcript. Falls back to a text box.
+- **`lib/agents/`** is the brain, all imported via `lib/agents/index.ts`:
+  - `orchestrator.ts` repeatedly picks which of four domains (`communication`, `cleanliness`, `social`, `personal_space` — `types.ts` `ALL_DOMAINS`) to probe next, then asks a specialist. The loop ends when all domains are `satisfied`, `MAX_TURNS` (12) is hit, or the orchestrator says `done`.
+  - `specialist.ts` generates one question for a domain and signals when it's satisfied (capped at `MAX_QUESTIONS_PER_AGENT`).
+  - `classifier.ts` maps the full transcript to a top-3 persona breakdown.
+  - Every agent is an OpenAI JSON-mode call (`lib/openai.ts`, model pinned in `MODEL`) wrapped in a try/catch with a **hardcoded fallback**, so a bad LLM response degrades instead of breaking the interview. Prompts live in `prompts.ts`. (`lib/scoutPrompt.ts` is legacy — imported by nothing.)
+- **`lib/transcriptStore.ts`** — in-memory `Map<userId, Session>` on `globalThis`; holds the transcript + live `InterviewState`.
+- **`lib/elevenlabs.ts`** — TTS/STT, gated by debug flags in `lib/config.ts` (`DEBUG_TTS`/`DEBUG_STT`/`DEBUG_AGENTS`) so you can develop without spending ElevenLabs quota (see the README debug table).
+- API under `app/api/interview/{start,respond,transcript}`: `start` creates the session + first question; `respond` accepts audio (multipart) or text (JSON), appends the answer, returns the next question — or the closing line + personas when done.
 
-When changing the result shape, update `CompatibilityResult` in `lib/business-logic.ts` — `ResultsView` and the routes import it, so there's a single source of truth (no duplicated types).
+### 2. The matching flow (still stubbed)
+A `flowId` threads four pages together; this half has **not** been wired to the interview/persona output above.
 
-### Stubs to replace (search for `TODO`)
-- AI agent → the textareas in `StartMatchingForm` / `JoinForm`.
-- Real scoring → `computeCompatibility` in `lib/business-logic.ts`.
-- Initiator email notification → `console.log` in `app/api/flows/[flowId]/respond/route.ts`.
-- Persistence → `lib/store.ts`.
+1. **Home `/`** — renders the voice interview (`InterviewPage`).
+2. **Share `/share/[flowId]`** (`SharePanel`) — initiator saves email (`POST .../email`) and copies the join link.
+3. **Join `/join/[flowId]`** (`JoinForm`) — **still a `Textarea` placeholder** that POSTs raw text to `.../respond`, which computes the result and stamps `resultsReadyAt`.
+4. **Results `/results/[flowId]`** (`ResultsView`) — polls `GET /api/flows/[flowId]` every 1s; spinner until status flips to `completed`, then shows the score + category breakdown.
 
-`@/*` resolves to the repo root (see `tsconfig.json`), so imports use `@/lib/...`, `@/components/...`.
+- `lib/store.ts` — `Map<flowId, MatchingFlow>` on `globalThis`. Status is *derived*, not stored: `getStatus()` returns `processing` until `Date.now() >= resultsReadyAt`, then `completed` — this is what makes the polling loading screen work without background timers.
+- `lib/business-logic.ts` — **deterministic hash-based placeholders**: `computeCompatibility()` (score + categories) and `computePersona()` (the 16-type HMTI built from 4 binary axes). Same inputs → same output. `CompatibilityResult` and `Persona` here are the shared contracts imported by the flow routes, `ResultsView`, and `PersonaCard` — change the shape here, not in copies.
 
-Add environment variables to `.env.local` (template: `.env.local.example`).
+### The open seam (most likely next work)
+System 1 produces real transcripts + personas; system 2's result still comes from `computeCompatibility(initiatorInput, roommateInput)` over placeholder strings. Connecting them — feeding interview transcripts/personas into the flow and replacing the hash stubs — is the central unfinished integration. Stubs are marked `TODO`: `JoinForm`, `StartMatchingForm`, `business-logic.ts`, the email `console.log` in `app/api/flows/[flowId]/respond/route.ts`, and both stores.
+
+### Conventions
+- **API route pattern:** parse JSON (400 on bad body), check the resource exists (404), then act. LLM/agent calls always carry a fallback.
+- **Both stores are in-memory only** — lost on restart, not shared across serverless instances. `TODO` swap for a DB.
+- `@/*` resolves to the repo root (`tsconfig.json`); imports use `@/lib/...`, `@/components/...`.
+- Env vars go in `.env.local` (`OPENAI_API_KEY`, `ELEVENLABS_API_KEY`, optional `ELEVENLABS_VOICE_ID`, debug flags). Template: `.env.local.example`.
+- **README caveat:** its "Email setup (Gmail)" section describes Nodemailer + `lib/email.ts`, but that file and the `nodemailer` dependency don't exist — email is still a `console.log` TODO. Treat that section as aspirational.
