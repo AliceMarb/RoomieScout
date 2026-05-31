@@ -10,7 +10,7 @@ export default async function SharePage({
   params: Promise<{ flowId: string }>;
 }) {
   const { flowId } = await params;
-  const flow = getFlow(flowId);
+  const flow = await getFlow(flowId);
 
   if (!flow) {
     return (

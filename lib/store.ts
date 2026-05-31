@@ -1,7 +1,4 @@
-// In-memory store for matching flows.
-// TODO: replace with a real database. This store is lost on server restart and
-// is not shared across multiple serverless instances.
-
+import { kv } from "@vercel/kv";
 import {
   computePersona,
   type CompatibilityResult,
@@ -22,43 +19,49 @@ export type MatchingFlow = {
 
 export type FlowStatus = "created" | "processing" | "completed";
 
-// Keep the Map on globalThis so it survives Next.js dev hot-reloads.
-const g = globalThis as unknown as { __flows?: Map<string, MatchingFlow> };
-const flows = g.__flows ?? (g.__flows = new Map<string, MatchingFlow>());
+const FLOW_TTL_SECONDS = 86400; // 24 hours
 
-export function createFlow(initiatorInput: string): MatchingFlow {
+function flowKey(id: string): string {
+  return `flow:${id}`;
+}
+
+export async function createFlow(initiatorInput: string): Promise<MatchingFlow> {
   const flow: MatchingFlow = {
     id: crypto.randomUUID(),
     initiatorInput,
     initiatorPersona: computePersona(initiatorInput),
     createdAt: new Date().toISOString(),
   };
-  flows.set(flow.id, flow);
+  await kv.set(flowKey(flow.id), flow, { ex: FLOW_TTL_SECONDS });
   return flow;
 }
 
-export function getFlow(id: string): MatchingFlow | undefined {
-  return flows.get(id);
+export async function getFlow(id: string): Promise<MatchingFlow | null> {
+  return kv.get<MatchingFlow>(flowKey(id));
 }
 
-export function updateFlow(
+export async function updateFlow(
   id: string,
   patch: Partial<MatchingFlow>,
-): MatchingFlow | undefined {
-  const flow = flows.get(id);
-  if (!flow) return undefined;
-  Object.assign(flow, patch);
-  return flow;
+): Promise<MatchingFlow | null> {
+  const flow = await kv.get<MatchingFlow>(flowKey(id));
+  if (!flow) return null;
+  const updated = { ...flow, ...patch };
+  await kv.set(flowKey(id), updated, { ex: FLOW_TTL_SECONDS });
+  return updated;
 }
 
-export function createFlowFromInterview(transcript: string, persona: Persona): MatchingFlow {
+export async function createFlowFromInterview(
+  transcript: string,
+  persona: Persona,
+): Promise<MatchingFlow> {
   const flow: MatchingFlow = {
     id: crypto.randomUUID(),
     initiatorInput: transcript,
     initiatorPersona: persona,
     createdAt: new Date().toISOString(),
   };
-  flows.set(flow.id, flow);
+  await kv.set(flowKey(flow.id), flow, { ex: FLOW_TTL_SECONDS });
   return flow;
 }
 
