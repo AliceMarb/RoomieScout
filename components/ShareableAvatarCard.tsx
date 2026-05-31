@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import type { Persona } from "@/lib/business-logic";
 import { getAvatarPublicPath } from "@/lib/avatar-paths";
@@ -94,15 +93,13 @@ export default function ShareableAvatarCard({
 
           <div className="relative mx-auto mt-1 flex flex-1 flex-col items-center justify-center overflow-hidden">
             {useGeneratedArt ? (
-              <div className="relative h-full w-full min-h-[140px] flex-1">
-                <Image
+              <div className="flex flex-1 items-center justify-center">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
                   src={generatedSrc}
                   alt={`${meta.title} — ${meta.animal} mascot`}
-                  fill
-                  className="object-contain object-center drop-shadow-md"
-                  sizes="320px"
+                  className="h-auto max-h-[160px] w-auto max-w-full object-contain drop-shadow-md"
                   onError={() => setUseGeneratedArt(false)}
-                  unoptimized
                 />
               </div>
             ) : (
