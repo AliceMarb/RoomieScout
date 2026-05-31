@@ -1,4 +1,5 @@
 import { getOpenAI, MODEL } from "@/lib/openai";
+import { formatTranscript } from "./format";
 import type { Message } from "@/lib/transcriptStore";
 import type { PersonaResult } from "./types";
 
@@ -28,12 +29,6 @@ Respond ONLY with this JSON (no markdown, no extra text):
     { "type": "The Early Bird", "weight": 20, "rationale": "..." }
   ]
 }`;
-
-function formatTranscript(transcript: Message[]): string {
-  return transcript
-    .map((m) => `${m.speaker === "ai" ? "Scout" : "User"}: ${m.text}`)
-    .join("\n");
-}
 
 export async function classifyPersona(transcript: Message[]): Promise<PersonaResult> {
   try {

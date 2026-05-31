@@ -1,18 +1,13 @@
 import { getOpenAI, MODEL } from "@/lib/openai";
 import { ORCHESTRATOR_PROMPT } from "./prompts";
 import { getSpecialistQuestion } from "./specialist";
+import { formatTranscript } from "./format";
 import type { AgentDomain, InterviewState, OrchestratorDecision } from "./types";
 import { ALL_DOMAINS as DOMAINS } from "./types";
 import type { Message } from "@/lib/transcriptStore";
 
 const MAX_TURNS = 12;
 const MAX_QUESTIONS_PER_AGENT = 4;
-
-function formatTranscript(transcript: Message[]): string {
-  return transcript
-    .map((m) => `${m.speaker === "ai" ? "Scout" : "User"}: ${m.text}`)
-    .join("\n");
-}
 
 export function createInitialInterviewState(): InterviewState {
   const agentStates = {} as InterviewState["agentStates"];
