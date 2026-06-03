@@ -1,10 +1,74 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import type { CompatibilityResult, Persona } from "@/lib/business-logic";
 import { getAvatarPublicPath } from "@/lib/avatar-paths";
-import { Card } from "@/components/ui";
+import { Button, Card, Input, RuleLabel } from "@/components/ui";
+
+function SaveResultCard({ flowId }: { flowId: string }) {
+  const [email, setEmail] = useState("");
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError(null);
+    setSending(true);
+    try {
+      const res = await fetch(`/api/flows/${flowId}/send-link`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      if (!res.ok) {
+        const data = (await res.json().catch(() => ({}))) as { error?: string };
+        setError(data.error || "Could not send. Try again.");
+        return;
+      }
+      setSent(true);
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setSending(false);
+    }
+  }
+
+  return (
+    <Card className="p-6">
+      <RuleLabel>Don&apos;t lose this</RuleLabel>
+      {sent ? (
+        <p className="mt-3 text-sm text-ink-soft">
+          Sent ✓ Check your inbox — the link reopens this page anytime.
+        </p>
+      ) : (
+        <>
+          <p className="mt-3 text-sm text-ink-soft">
+            Email yourself a link to this page so you can come back to it.
+          </p>
+          <form onSubmit={handleSubmit} className="mt-4 flex gap-2">
+            <Input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+            />
+            <Button type="submit" variant="solid" disabled={sending || !email} className="shrink-0">
+              {sending ? "Sending…" : "Email me"}
+            </Button>
+          </form>
+          {error ? (
+            <p className="mt-2 text-sm text-accent-ink" role="alert">
+              {error}
+            </p>
+          ) : null}
+        </>
+      )}
+    </Card>
+  );
+}
 
 type FlowState = {
   status: "created" | "processing" | "completed" | "not_found";
@@ -17,6 +81,12 @@ type FlowState = {
 
 function PersonaCard({ persona, label }: { persona: Persona; label: string }) {
   const avatarSrc = getAvatarPublicPath(persona.code);
+  // Spell out the code: each letter is the chosen side of one axis, e.g.
+  // COSL → "Casual · Open · Stable · Laid-back". This makes the type code
+  // legible at a glance instead of an unexplained acronym.
+  const traits = persona.axes.map((axis) =>
+    axis.chosen === "left" ? axis.left : axis.right,
+  );
   return (
     <div className="flex-1 rounded-xl border border-line bg-surface p-4">
       <p className="eyebrow">{label}</p>
@@ -30,9 +100,19 @@ function PersonaCard({ persona, label }: { persona: Persona; label: string }) {
           onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
         />
         <div>
-          <p className="font-display text-lg font-bold text-ink">{persona.code}</p>
-          <p className="text-xs font-medium text-ink-soft">{persona.title}</p>
+          <p className="font-display text-lg font-bold leading-tight text-ink">{persona.title}</p>
+          <p className="mt-0.5 font-display text-xs font-semibold tracking-widest text-accent tnum">{persona.code}</p>
         </div>
+      </div>
+      <div className="mt-3 flex flex-wrap gap-1.5">
+        {traits.map((trait) => (
+          <span
+            key={trait}
+            className="rounded-full border border-line bg-paper px-2 py-0.5 text-[10px] font-medium text-ink-soft"
+          >
+            {trait}
+          </span>
+        ))}
       </div>
       <p className="mt-2 text-xs leading-relaxed text-ink-soft">{persona.description}</p>
     </div>
@@ -202,6 +282,7 @@ export default function ResultsView({ flowId }: { flowId: string }) {
         </Card>
       )}
 
+      <SaveResultCard flowId={flowId} />
     </div>
   );
 }
