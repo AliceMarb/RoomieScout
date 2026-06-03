@@ -31,6 +31,13 @@ export default function ShareableAvatarCard({
   const generatedSrc = getAvatarPublicPath(persona.code);
   const { palette } = meta;
   const displayTitle = meta.title;
+  // Decode the code into the word each letter stands for, e.g.
+  // COSL → ["Casual", "Open", "Stable", "Laid-back"], shown as the card's
+  // trait chips so the acronym reads as plain language instead of an
+  // unexplained four-letter code.
+  const decodedTraits = persona.axes.map((axis) =>
+    axis.chosen === "left" ? axis.left : axis.right,
+  );
 
   async function handleShare() {
     const text = [
@@ -75,8 +82,6 @@ export default function ShareableAvatarCard({
             style={{ background: palette.accent }}
           />
           <div className="absolute bottom-0 left-0 right-0 h-2/5 bg-gradient-to-t from-white/60 to-transparent" />
-          <div className="absolute right-4 top-6 h-16 w-12 rounded-lg border-2 border-white/50 bg-white/25 shadow-inner" />
-          <div className="absolute left-4 top-20 h-1 w-16 rounded-full bg-white/45" />
         </div>
 
         <div className="relative flex h-full flex-col px-5 pb-5 pt-5">
@@ -126,13 +131,13 @@ export default function ShareableAvatarCard({
               &ldquo;{meta.tagline}&rdquo;
             </p>
             <div className="flex flex-wrap justify-center gap-1.5">
-              {meta.traitBadges.map((badge) => (
+              {decodedTraits.map((trait) => (
                 <span
-                  key={badge}
+                  key={trait}
                   className="rounded-full px-2.5 py-1 text-[10px] font-semibold shadow-sm"
                   style={{ background: palette.badge, color: palette.badgeText }}
                 >
-                  {badge}
+                  {trait}
                 </span>
               ))}
             </div>
