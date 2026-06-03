@@ -1,37 +1,9 @@
-import { kv as vercelKv } from "@vercel/kv";
+import { kv } from "@/lib/kv";
 import {
   computePersona,
   type CompatibilityResult,
   type Persona,
 } from "@/lib/business-logic";
-
-// Minimal KV-shaped store. In production (Vercel) we use @vercel/kv. When the
-// KV env vars are absent (local dev), fall back to an in-memory Map on
-// globalThis so the flow system works without external credentials. The TTL
-// option is accepted and ignored by the fallback.
-type KvLike = {
-  get<T>(key: string): Promise<T | null>;
-  set(key: string, value: unknown, opts?: { ex?: number }): Promise<unknown>;
-};
-
-const hasKvCreds = Boolean(
-  process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN,
-);
-
-const g = globalThis as unknown as { __kvFallback?: Map<string, unknown> };
-const mem = g.__kvFallback ?? (g.__kvFallback = new Map<string, unknown>());
-
-const memoryKv: KvLike = {
-  async get<T>(key: string): Promise<T | null> {
-    return (mem.get(key) as T) ?? null;
-  },
-  async set(key: string, value: unknown): Promise<unknown> {
-    mem.set(key, value);
-    return "OK";
-  },
-};
-
-const kv: KvLike = hasKvCreds ? (vercelKv as unknown as KvLike) : memoryKv;
 
 export type MatchingFlow = {
   id: string;
@@ -42,6 +14,7 @@ export type MatchingFlow = {
   roommateInput?: string;
   roommatePersona?: Persona;
   roommateName?: string;
+  roommateEmail?: string;
   result?: CompatibilityResult;
   resultsReadyAt?: number;
   createdAt: string;
@@ -53,6 +26,30 @@ const FLOW_TTL_SECONDS = 86400; // 24 hours
 
 function flowKey(id: string): string {
   return `flow:${id}`;
+}
+
+// Index for the "match by email" path: two people who each take the test on
+// their own (no shared link) are paired by the unordered set of their two
+// emails. Sorting + lowercasing makes the key identical no matter who submits
+// first or which email each person types as "mine" vs "my roommate's".
+function pairKey(emailA: string, emailB: string): string {
+  const [x, y] = [emailA.trim().toLowerCase(), emailB.trim().toLowerCase()].sort();
+  return `pair:${x}|${y}`;
+}
+
+export async function getPairedFlowId(
+  emailA: string,
+  emailB: string,
+): Promise<string | null> {
+  return kv.get<string>(pairKey(emailA, emailB));
+}
+
+export async function setPairedFlowId(
+  emailA: string,
+  emailB: string,
+  flowId: string,
+): Promise<void> {
+  await kv.set(pairKey(emailA, emailB), flowId, { ex: FLOW_TTL_SECONDS });
 }
 
 export async function createFlow(initiatorInput: string): Promise<MatchingFlow> {
@@ -67,7 +64,30 @@ export async function createFlow(initiatorInput: string): Promise<MatchingFlow> 
 }
 
 export async function getFlow(id: string): Promise<MatchingFlow | null> {
-  return kv.get<MatchingFlow>(flowKey(id));
+  const existing = await kv.get<MatchingFlow>(flowKey(id));
+  if (existing) return existing;
+  // Dev shortcut: any id like `dev-alice` is auto-seeded on first access with a
+  // stable hash-based persona, so you can jump straight to /share/dev-alice
+  // without sitting through the interview. Local dev only (Vercel sets
+  // NODE_ENV=production even on previews, so this never fires in deployments).
+  if (process.env.NODE_ENV !== "production" && id.startsWith("dev-")) {
+    return seedDevFlow(id);
+  }
+  return null;
+}
+
+async function seedDevFlow(id: string): Promise<MatchingFlow> {
+  const label = id.slice("dev-".length) || "dev";
+  const name = label.charAt(0).toUpperCase() + label.slice(1);
+  const flow: MatchingFlow = {
+    id,
+    initiatorInput: `Dev-seeded persona "${name}": tidy, sociable, flexible schedule, likes clear house rules.`,
+    initiatorPersona: computePersona(id),
+    initiatorName: name,
+    createdAt: new Date().toISOString(),
+  };
+  await kv.set(flowKey(id), flow, { ex: FLOW_TTL_SECONDS });
+  return flow;
 }
 
 export async function updateFlow(
