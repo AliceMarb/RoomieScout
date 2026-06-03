@@ -38,6 +38,18 @@ export async function textToSpeech(text: string): Promise<Buffer | null> {
   return Buffer.from(arrayBuffer);
 }
 
+// Map an audio mime type to the file extension ElevenLabs expects. iOS Safari
+// records audio/mp4, so a hardcoded ".webm" name makes Scribe reject the bytes
+// as corrupted (invalid_content).
+function extForMime(mime: string): string {
+  if (mime.includes("webm")) return "webm";
+  if (mime.includes("mp4") || mime.includes("m4a") || mime.includes("aac")) return "mp4";
+  if (mime.includes("mpeg") || mime.includes("mp3")) return "mp3";
+  if (mime.includes("ogg")) return "ogg";
+  if (mime.includes("wav")) return "wav";
+  return "webm";
+}
+
 export async function speechToText(
   audioBuffer: Buffer,
   mimeType = "audio/webm"
@@ -46,9 +58,12 @@ export async function speechToText(
     console.log("[DEBUG_STT] skipped — returning canned response");
     return "This is a debug response.";
   }
+  if (!audioBuffer || audioBuffer.length === 0) {
+    throw new Error("ElevenLabs STT skipped: empty audio buffer");
+  }
   const formData = new FormData();
   const blob = new Blob([audioBuffer], { type: mimeType });
-  formData.append("file", blob, "recording.webm");
+  formData.append("file", blob, `recording.${extForMime(mimeType)}`);
   formData.append("model_id", STT_MODEL);
   formData.append("tag_audio_events", "false");
 

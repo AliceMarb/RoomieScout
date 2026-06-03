@@ -35,6 +35,28 @@ type RespondResponse = {
 
 type OrbState = "ready" | "idle" | "speaking" | "listening" | "transcribing" | "thinking" | "done";
 
+// iOS Safari records audio/mp4 (AAC), not webm. Pick a format the browser
+// actually supports so we don't mislabel the bytes when uploading.
+function pickRecorderMimeType(): string {
+  const candidates = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/mpeg"];
+  if (typeof MediaRecorder !== "undefined" && typeof MediaRecorder.isTypeSupported === "function") {
+    for (const t of candidates) {
+      if (MediaRecorder.isTypeSupported(t)) return t;
+    }
+  }
+  return ""; // let the browser choose its default
+}
+
+// Map a MediaRecorder mime type to a file extension ElevenLabs can parse.
+function extForMime(mime: string): string {
+  if (mime.includes("webm")) return "webm";
+  if (mime.includes("mp4") || mime.includes("m4a") || mime.includes("aac")) return "mp4";
+  if (mime.includes("mpeg") || mime.includes("mp3")) return "mp3";
+  if (mime.includes("ogg")) return "ogg";
+  if (mime.includes("wav")) return "wav";
+  return "webm";
+}
+
 export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
   const router = useRouter();
   const [started, setStarted] = useState(false);
@@ -169,9 +191,14 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
       }
     }
     audioChunksRef.current = [];
-    const recorder = new MediaRecorder(streamRef.current!);
-    recorder.ondataavailable = (e) => audioChunksRef.current.push(e.data);
-    recorder.start();
+    const mimeType = pickRecorderMimeType();
+    const recorder = new MediaRecorder(streamRef.current!, mimeType ? { mimeType } : undefined);
+    recorder.ondataavailable = (e) => {
+      if (e.data && e.data.size > 0) audioChunksRef.current.push(e.data);
+    };
+    // Timeslice so data flushes periodically — without it a very short
+    // recording on some browsers can stop before any chunk is emitted.
+    recorder.start(250);
     mediaRecorderRef.current = recorder;
     setRecording(true);
   }
@@ -183,13 +210,25 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
 
     await new Promise<void>((resolve) => {
       mediaRecorderRef.current!.onstop = () => resolve();
+      // Flush any buffered audio before stopping so the final chunk isn't lost.
+      try { mediaRecorderRef.current!.requestData(); } catch { /* not all browsers support this */ }
       mediaRecorderRef.current!.stop();
     });
 
     const mimeType = mediaRecorderRef.current!.mimeType || "audio/webm";
     const blob = new Blob(audioChunksRef.current, { type: mimeType });
+
+    // Guard against empty / too-short recordings — sending these to ElevenLabs
+    // STT returns a 400 "empty_file" error, so handle it gracefully instead.
+    if (blob.size < 1000) {
+      setTranscribing(false);
+      setLastAiMessage("I didn't catch that — hold the orb and speak again.");
+      setCanRecord(true);
+      return;
+    }
+
     const formData = new FormData();
-    formData.append("audio", blob, "recording.webm");
+    formData.append("audio", blob, `recording.${extForMime(mimeType)}`);
     formData.append("tts", String(ttsEnabled));
     formData.append("interviewState", JSON.stringify(interviewStateRef.current));
     formData.append("transcript", JSON.stringify(serverTranscriptRef.current));
