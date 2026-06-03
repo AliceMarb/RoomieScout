@@ -47,6 +47,12 @@ function pickRecorderMimeType(): string {
   return ""; // let the browser choose its default
 }
 
+// A valid zero-sample WAV. Playing it on the <audio> element inside a user
+// gesture "unlocks" that element so later programmatic .play() calls (the TTS,
+// which fire after an async fetch) aren't blocked by iOS Safari autoplay rules.
+const SILENT_AUDIO =
+  "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=";
+
 // Map a MediaRecorder mime type to a file extension ElevenLabs can parse.
 function extForMime(mime: string): string {
   if (mime.includes("webm")) return "webm";
@@ -86,6 +92,15 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
 
   function handleTapToStart() {
     if (started) return;
+    // Unlock the audio element within this user gesture, before handleStart's
+    // async fetch — otherwise iOS Safari blocks the intro TTS playback with a
+    // NotAllowedError. One successful play() in-gesture unlocks it for the
+    // whole session, so every later question/closing line plays too.
+    const audio = playerRef.current;
+    if (audio) {
+      audio.src = SILENT_AUDIO;
+      audio.play().catch(() => {});
+    }
     handleStart();
   }
 
@@ -183,10 +198,29 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
 
   async function handleRecordStart() {
     if (!streamRef.current) {
+      // getUserMedia only exists in a secure context (https or localhost). On a
+      // plain-http LAN address (e.g. testing a phone against the dev server)
+      // navigator.mediaDevices is undefined, so guard before calling it.
+      if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
+        const msg = !window.isSecureContext
+          ? "Voice needs a secure (https) connection. Open the app over https — http://localhost works, but a plain http:// address does not."
+          : "This browser doesn't support microphone capture. Try Safari or Chrome, or switch to Chat mode.";
+        setLastAiMessage(msg);
+        alert(msg);
+        return;
+      }
       try {
         streamRef.current = await navigator.mediaDevices.getUserMedia({ audio: true });
-      } catch {
-        alert("Microphone access is required for voice input.");
+      } catch (err) {
+        const name = (err as DOMException)?.name;
+        const msg =
+          name === "NotAllowedError" || name === "SecurityError"
+            ? "Microphone access was blocked. Enable it for this site in your browser settings, then reload and try again."
+            : name === "NotFoundError"
+            ? "No microphone was found on this device. Switch to Chat mode to continue."
+            : "Couldn't access the microphone. Check your browser permissions, or switch to Chat mode.";
+        setLastAiMessage(msg);
+        alert(msg);
         return;
       }
     }
