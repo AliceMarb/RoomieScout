@@ -8,21 +8,27 @@ export const DEBUG_AGENTS = process.env.NEXT_PUBLIC_DEBUG_AGENTS === "true";
 
 // Speech-to-text provider. Server-side only (STT runs on the server).
 //   "elevenlabs" — cloud Scribe, needs ELEVENLABS_API_KEY
+//   "deepgram"   — cloud Nova, needs DEEPGRAM_API_KEY (cheapest cloud option)
 //   "whisper"    — local openai-whisper, no quota/key (see lib/voice/README.md)
 // Default: whisper in dev (npm run dev → the free local engine), elevenlabs in
 // production. Set STT_PROVIDER explicitly in .env.local to override either way.
-export const STT_PROVIDER: "elevenlabs" | "whisper" =
+export const STT_PROVIDER: "elevenlabs" | "deepgram" | "whisper" =
   process.env.STT_PROVIDER === "whisper"
     ? "whisper"
-    : process.env.STT_PROVIDER === "elevenlabs"
-      ? "elevenlabs"
-      : process.env.NODE_ENV === "development"
-        ? "whisper"
-        : "elevenlabs";
+    : process.env.STT_PROVIDER === "deepgram"
+      ? "deepgram"
+      : process.env.STT_PROVIDER === "elevenlabs"
+        ? "elevenlabs"
+        : process.env.NODE_ENV === "development"
+          ? "whisper"
+          : "elevenlabs";
 
 // Local Whisper tuning (only used when STT_PROVIDER=whisper).
 export const WHISPER_MODEL = process.env.WHISPER_MODEL ?? "base";
 export const WHISPER_PYTHON = process.env.WHISPER_PYTHON ?? "python3";
+
+// Deepgram model (only used when STT_PROVIDER=deepgram).
+export const DEEPGRAM_MODEL = process.env.DEEPGRAM_MODEL ?? "nova-3";
 
 // Text-to-speech provider. Server-side only (TTS runs on the server).
 //   "elevenlabs" — cloud, needs ELEVENLABS_API_KEY

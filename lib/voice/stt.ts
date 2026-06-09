@@ -3,6 +3,7 @@
 import { DEBUG_STT, STT_PROVIDER } from "@/lib/config";
 import { elevenLabsSpeechToText } from "./elevenlabs";
 import { whisperSpeechToText } from "./whisper";
+import { deepgramSpeechToText } from "./deepgram";
 
 export async function speechToText(
   audioBuffer: Buffer,
@@ -14,6 +15,9 @@ export async function speechToText(
   }
   if (STT_PROVIDER === "whisper") {
     return whisperSpeechToText(audioBuffer, mimeType);
+  }
+  if (STT_PROVIDER === "deepgram") {
+    return deepgramSpeechToText(audioBuffer, mimeType);
   }
   return elevenLabsSpeechToText(audioBuffer, mimeType);
 }
