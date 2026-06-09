@@ -12,6 +12,7 @@ import { textToSpeech, speechToText } from "@/lib/voice";
 | `tts.ts` | Text-to-speech dispatcher: debug short-circuit, provider switch, dev degrade-to-silent. |
 | `stt.ts` | Speech-to-text dispatcher: debug short-circuit, then provider switch. |
 | `elevenlabs.ts` | ElevenLabs cloud TTS (`elevenLabsTextToSpeech`) + STT (`elevenLabsSpeechToText`). |
+| `deepgram.ts` | Deepgram cloud STT (`deepgramSpeechToText`) — cheapest cloud option. |
 | `kokoro.ts` | Local TTS via kokoro-onnx, for dev. Spawns `kokoro_tts.py`, transcodes WAV→MP3 with ffmpeg. |
 | `kokoro_tts.py` | Python entry point that synthesizes a WAV with Kokoro. |
 | `whisper.ts` | Local STT via openai-whisper, for dev. Spawns `whisper_transcribe.py`. |
@@ -28,9 +29,27 @@ production uses **ElevenLabs** for both. Override per direction in `.env.local`:
 | Speech → text | `STT_PROVIDER` | `whisper` | `elevenlabs` (needs `ELEVENLABS_API_KEY`) |
 | Text → speech | `TTS_PROVIDER` | `kokoro` | `elevenlabs` (needs `ELEVENLABS_API_KEY`) |
 
+For STT you can also set `STT_PROVIDER=deepgram` (needs `DEEPGRAM_API_KEY`) — cloud
+Nova, the cheapest hosted option. See [Deepgram setup](#deepgram-setup) below.
+
 `NEXT_PUBLIC_DEBUG_STT=true` / `NEXT_PUBLIC_DEBUG_TTS=true` still win and return a
 canned response / skip audio. In dev, if local TTS fails (e.g. model files
 missing) Scout's line falls back to text instead of erroring the interview.
+
+## Deepgram setup
+
+Deepgram's Nova models are the cheapest hosted STT here. Grab a key from
+[console.deepgram.com](https://console.deepgram.com) → API Keys, then in `.env.local`:
+
+```bash
+STT_PROVIDER=deepgram
+DEEPGRAM_API_KEY=your_deepgram_api_key
+# optional: override the model (default nova-3)
+# DEEPGRAM_MODEL=nova-3
+```
+
+`deepgram.ts` POSTs the raw recorded bytes to Deepgram's prerecorded endpoint with
+`smart_format` on, so there's no SDK dependency — just a `fetch`.
 
 ## Local setup (dev only)
 
