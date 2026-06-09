@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { SCOUT_CLOSING } from "@/lib/interview";
-import { speechToText, textToSpeech } from "@/lib/elevenlabs";
+import { speechToText, textToSpeech } from "@/lib/voice";
 import { getNextQuestion, classifyPersona } from "@/lib/agents";
 import { createFlowFromInterview, getFlow, updateFlow } from "@/lib/store";
 import { computeCompatibility } from "@/lib/business-logic";

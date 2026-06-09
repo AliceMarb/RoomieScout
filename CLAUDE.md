@@ -37,7 +37,7 @@ Scout interviews one person at a time through a multi-agent loop, then classifie
   - `classifier.ts` maps the full transcript to a top-3 persona breakdown.
   - Every agent is an OpenAI JSON-mode call (`lib/openai.ts`, model pinned in `MODEL`) wrapped in a try/catch with a **hardcoded fallback**, so a bad LLM response degrades instead of breaking the interview. Prompts live in `prompts.ts`. (`lib/scoutPrompt.ts` is legacy — imported by nothing.)
 - **`lib/transcriptStore.ts`** — in-memory `Map<userId, Session>` on `globalThis`; holds the transcript + live `InterviewState`.
-- **`lib/elevenlabs.ts`** — TTS/STT, gated by debug flags in `lib/config.ts` (`DEBUG_TTS`/`DEBUG_STT`/`DEBUG_AGENTS`) so you can develop without spending ElevenLabs quota (see the README debug table).
+- **`lib/voice/`** — all speech I/O behind one barrel (`@/lib/voice` → `textToSpeech`, `speechToText`). Two dispatchers pick a provider per direction: `tts.ts` by `TTS_PROVIDER` (local `kokoro` via `kokoro_tts.py` in dev | cloud `elevenlabs` in prod) and `stt.ts` by `STT_PROVIDER` (local `whisper` via `whisper_transcribe.py` in dev | cloud `elevenlabs` in prod); set the env var to force either. `elevenlabs.ts` holds the cloud TTS+STT; `kokoro.ts`/`whisper.ts` shell out to Python (one venv, `WHISPER_PYTHON`). Gated by debug flags in `lib/config.ts` (`DEBUG_TTS`/`DEBUG_STT`/`DEBUG_AGENTS`); in dev, local TTS failures degrade to text instead of erroring. See `lib/voice/README.md`.
 - API under `app/api/interview/{start,respond,transcript}`: `start` creates the session + first question; `respond` accepts audio (multipart) or text (JSON), appends the answer, returns the next question — or the closing line + personas when done.
 
 ### 2. The matching flow (still stubbed)

@@ -19,6 +19,32 @@ npm run dev
 
 Open http://localhost:3000.
 
+### Free local voice (dev)
+
+In dev, speech runs on free **local** engines by default — Whisper for
+speech-to-text and Kokoro for text-to-speech — so the interview works without any
+ElevenLabs quota (production still uses ElevenLabs). One-time setup:
+
+```bash
+# 1) Python deps in a venv (needs ffmpeg on PATH: brew install ffmpeg)
+python3 -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip
+pip install openai-whisper kokoro-onnx soundfile
+
+# 2) Kokoro model files (git-ignored)
+mkdir -p models
+curl -L -o models/kokoro-v1.0.onnx https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/kokoro-v1.0.onnx
+curl -L -o models/voices-v1.0.bin  https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/voices-v1.0.bin
+
+# 3) Point Node at the venv (so you don't have to keep it activated)
+echo "WHISPER_PYTHON=$(pwd)/.venv/bin/python" >> .env.local
+```
+
+Then `npm run dev`. To force the cloud engines instead, set `STT_PROVIDER=elevenlabs`
+/ `TTS_PROVIDER=elevenlabs` in `.env.local`. Full details, voices, and overrides:
+[lib/voice/README.md](lib/voice/README.md).
+
 ## How a match works
 
 ```
@@ -124,7 +150,7 @@ NEXT_PUBLIC_DEBUG_STT=false
 ### Key library files
 | Path | What it does |
 | --- | --- |
-| `lib/elevenlabs.ts` | ElevenLabs TTS and STT helpers |
+| `lib/voice/` | All speech I/O — ElevenLabs TTS + STT, local Whisper STT, provider dispatch (see `lib/voice/README.md`) |
 | `lib/transcriptStore.ts` | In-memory interview session store (lost on server restart) |
 | `lib/store.ts` | In-memory matching flow store (lost on server restart) |
 | `lib/business-logic.ts` | HMTI persona + compatibility score calculation (currently deterministic placeholders) |
