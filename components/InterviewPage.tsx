@@ -148,14 +148,14 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
     return res.json() as Promise<T>;
   }
 
-  async function handleStart() {
+  async function handleStart(tts = ttsEnabled) {
     setStarted(true);
 
     try {
       const data = await fetchJSON<StartResponse>("/api/interview/start", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tts: ttsEnabled, ...(flowId && { flowId }) }),
+        body: JSON.stringify({ tts, ...(flowId && { flowId }) }),
       });
 
       interviewStateRef.current = data.interviewState;
@@ -316,7 +316,12 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
       setMode("voice");
       setTtsEnabled(true);
     } else {
+      // Chat is a silent, text-only experience. If the interview hasn't been
+      // started yet (e.g. the user switched to Chat straight from the landing
+      // orb), kick it off here — otherwise Scout's intro never appears.
       setMode("text");
+      setTtsEnabled(false);
+      if (!started) handleStart(false);
     }
   }
 
@@ -523,27 +528,12 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
     <main className="flex h-dvh flex-col bg-paper">
       <header className="shrink-0 border-b border-line px-5 py-3 flex items-center justify-between">
         <Wordmark />
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => {
-              if (!ttsEnabled && !window.confirm("This uses ElevenLabs credits. Only turn on with intention — turn off when done testing.")) return;
-              setTtsEnabled((v) => !v);
-            }}
-            title={ttsEnabled ? "Voice on — click to mute" : "Voice off (saves API credits)"}
-            className={cn(
-              "text-lg transition-opacity",
-              ttsEnabled ? "opacity-100" : "opacity-30",
-            )}
-          >
-            {ttsEnabled ? "\u{1F50A}" : "\u{1F507}"}
-          </button>
-          <button
-            onClick={handleModeToggle}
-            className="eyebrow rounded-md px-2.5 py-1.5 transition-colors hover:bg-ink/5"
-          >
-            Voice
-          </button>
-        </div>
+        <button
+          onClick={handleModeToggle}
+          className="eyebrow rounded-md px-2.5 py-1.5 transition-colors hover:bg-ink/5"
+        >
+          Voice
+        </button>
       </header>
 
       <div className="flex-1 overflow-y-auto px-4 py-4 pb-32">
@@ -602,31 +592,12 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
           />
           <button
             onClick={handleTextSubmit}
-            disabled={recordDisabled || !textInput.trim() || recording}
+            disabled={recordDisabled || !textInput.trim()}
             className="rounded-full bg-ink px-4 py-2 text-sm font-medium text-paper transition-colors disabled:opacity-40 hover:bg-ink/90"
           >
             Send
           </button>
-          <button
-            disabled={recordDisabled}
-            onMouseDown={handleRecordStart}
-            onMouseUp={handleRecordStop}
-            onTouchStart={(e) => { e.preventDefault(); handleRecordStart(); }}
-            onTouchEnd={(e) => { e.preventDefault(); handleRecordStop(); }}
-            className={cn(
-              "flex shrink-0 items-center justify-center rounded-full text-xl transition-colors",
-              transcribing && "cursor-not-allowed bg-accent text-paper animate-pulse",
-              !transcribing && recordDisabled && "cursor-not-allowed bg-line text-ink-faint",
-              !transcribing && !recordDisabled && recording && "cursor-pointer bg-accent-ink text-paper ring-4 ring-accent/30",
-              !transcribing && !recordDisabled && !recording && "cursor-pointer bg-ink text-paper hover:bg-ink/90",
-            )}
-            style={{ width: 44, height: 44 }}
-            title="Hold to speak"
-          >
-            {done ? "✓" : transcribing ? "⌛" : "\u{1F399}"}
-          </button>
         </div>
-        <p className="mt-1.5 text-center eyebrow">{statusText[orbState]}</p>
       </div>
 
       <audio ref={playerRef} className="hidden" />
