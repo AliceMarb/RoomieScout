@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { computeCompatibility, computePersona } from "@/lib/business-logic";
-import type { Persona } from "@/lib/business-logic";
+import { computeCompatibility, computePersona } from "@/lib/personas";
+import type { Persona } from "@/lib/personas";
 import { getFlow, updateFlow } from "@/lib/store";
 import { sendResultsEmail } from "@/lib/email";
 import { generateCompatibilitySummary } from "@/lib/compatibilitySummary";

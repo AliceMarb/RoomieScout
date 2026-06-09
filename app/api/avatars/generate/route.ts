@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { generateAvatarImage, isValidHmtiCode } from "@/lib/generate-avatar-image";
+import { generateAvatarImage } from "@/lib/personas/generate";
+import { isValidHmtiCode } from "@/lib/personas";
 
 export async function POST(req: Request) {
   try {

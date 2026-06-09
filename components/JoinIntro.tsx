@@ -3,8 +3,8 @@
 import Image from "next/image";
 import { useState } from "react";
 import JoinForm from "@/components/JoinForm";
-import type { Persona } from "@/lib/business-logic";
-import { getAvatarPublicPath } from "@/lib/avatar-paths";
+import type { Persona } from "@/lib/personas";
+import { getAvatarPublicPath } from "@/lib/personas";
 
 function firstName(email?: string): string {
   if (!email) return "Your potential roommate";

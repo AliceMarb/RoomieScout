@@ -1,16 +1,15 @@
+/** Server-side avatar image generation via OpenAI image models. */
+
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import type OpenAI from "openai";
 import { getOpenAIAsync } from "@/lib/openai";
-import {
-  buildAvatarImagePrompt,
-  type AvatarPromptStyle,
-} from "@/lib/avatar-image-prompt";
-import { getAvatarPublicPath } from "@/lib/avatar-paths";
-import { HMTI_AVATARS } from "@/lib/hmti-avatars";
+import { buildAvatarImagePrompt } from "./image-prompt";
+import { isValidHmtiCode } from "./persona";
+import type { AvatarPromptStyle } from "./types";
 
+/** Absolute filesystem dir where avatar PNGs are written (server-only). */
 export const AVATAR_IMAGE_DIR = path.join(process.cwd(), "public", "avatars");
-export { getAvatarPublicPath };
 export const DEFAULT_IMAGE_MODEL = "gpt-image-1";
 
 export type GenerateAvatarOptions = {
@@ -28,10 +27,6 @@ export type GenerateAvatarResult = {
   prompt: string;
   style: AvatarPromptStyle;
 };
-
-export function isValidHmtiCode(code: string): boolean {
-  return code in HMTI_AVATARS;
-}
 
 function isGptImageModel(model: string): boolean {
   return model.startsWith("gpt-image");

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { computeCompatibility } from "@/lib/business-logic";
+import { computeCompatibility } from "@/lib/personas";
 import {
   getFlow,
   updateFlow,
