@@ -3,7 +3,7 @@ import { SCOUT_CLOSING } from "@/lib/interview";
 import { speechToText, textToSpeech } from "@/lib/elevenlabs";
 import { getNextQuestion, classifyPersona } from "@/lib/agents";
 import { createFlowFromInterview, getFlow, updateFlow } from "@/lib/store";
-import { computeCompatibility } from "@/lib/business-logic";
+import { computeCompatibility } from "@/lib/personas";
 import { formatTranscript } from "@/lib/agents/format";
 import type { InterviewState } from "@/lib/agents";
 import type { Message } from "@/lib/transcriptStore";

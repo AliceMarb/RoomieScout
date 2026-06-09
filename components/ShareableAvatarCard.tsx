@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { Persona } from "@/lib/business-logic";
-import { getAvatarPublicPath } from "@/lib/avatar-paths";
-import { getHmtiAvatarMeta } from "@/lib/hmti-avatars";
+import type { Persona } from "@/lib/personas";
+import { getAvatarPublicPath, getPersonaMeta } from "@/lib/personas";
 import MascotIllustration from "@/components/MascotIllustration";
 
 type ShareableAvatarCardProps = {
@@ -27,7 +26,7 @@ export default function ShareableAvatarCard({
   useEffect(() => {
     setCanShare(typeof navigator !== "undefined" && "share" in navigator);
   }, []);
-  const meta = getHmtiAvatarMeta(persona.code);
+  const meta = getPersonaMeta(persona.code);
   const generatedSrc = getAvatarPublicPath(persona.code);
   const { palette } = meta;
   const displayTitle = meta.title;

@@ -127,7 +127,7 @@ NEXT_PUBLIC_DEBUG_STT=false
 | `lib/elevenlabs.ts` | ElevenLabs TTS and STT helpers |
 | `lib/transcriptStore.ts` | In-memory interview session store (lost on server restart) |
 | `lib/store.ts` | In-memory matching flow store (lost on server restart) |
-| `lib/business-logic.ts` | HMTI persona + compatibility score calculation (currently deterministic placeholders) |
+| `lib/personas/` | **Everything about the 16 HMTI personas/avatars in one folder** — catalogue (copy, descriptions, avatar visuals), persona construction, compatibility scoring, and avatar image generation. See [`lib/personas/README.md`](lib/personas/README.md). |
 | `lib/agents/` | Multi-agent interview orchestration (orchestrator + specialist agents) |
 | `lib/interview.ts` | Scout's static intro text and fallback questions |
 | `lib/scoutPrompt.ts` | Scout's system prompt (ready to wire to Claude) |
@@ -143,4 +143,4 @@ NEXT_PUBLIC_DEBUG_STT=false
 - Edit questions/intro: `lib/interview.ts`
 - Edit Scout's persona and reasoning: `lib/scoutPrompt.ts`
 - Edit the multi-agent logic: `lib/agents/orchestrator.ts` and `lib/agents/specialist.ts`
-- Edit HMTI types and compatibility scoring: `lib/business-logic.ts`
+- Edit HMTI persona types, descriptions, avatars, and compatibility scoring: `lib/personas/` (start with `lib/personas/data.ts`)

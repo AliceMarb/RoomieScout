@@ -3,7 +3,7 @@ import {
   computePersona,
   type CompatibilityResult,
   type Persona,
-} from "@/lib/business-logic";
+} from "@/lib/personas";
 
 export type MatchingFlow = {
   id: string;

@@ -1,34 +1,62 @@
-/** HMTI Animal Avatar System — visual + copy for all 16 roommate types. */
+/**
+ * HMTI persona catalogue — the single source of truth for all 16 housemate
+ * types: copy, descriptions, avatar visuals, and image-generation direction.
+ *
+ * Generated avatar images live in `public/avatars/<CODE>.png` (kept under
+ * `public/` so Next.js serves them statically — see `paths.ts`). To regenerate
+ * them run `node scripts/generate-all-avatars.mjs` with the dev server up.
+ */
 
-export type HmtiAvatarMeta = {
-  title: string;
-  animal: string;
-  scene: string;
-  expression: string;
-  props: string[];
-  palette: {
-    bgFrom: string;
-    bgTo: string;
-    accent: string;
-    soft: string;
-    badge: string;
-    badgeText: string;
-  };
-  tagline: string;
-  traitBadges: [string, string, string];
-  roommateSuperpower: string;
-  dangerZone: string;
-  bestMatches: string[];
-  householdEnergy: string;
-};
+import type { PersonaMeta } from "./types";
 
-export const HMTI_AVATARS: Record<string, HmtiAvatarMeta> = {
+/**
+ * The four binary axes of the Housemate Type Indicator (HMTI). The chosen
+ * letter on each axis builds the four-letter code (16 combinations total).
+ */
+export const HMTI_AXES = [
+  {
+    name: "Cleanliness",
+    salt: "clean",
+    a: { letter: "N", trait: "Neat", description: "Keeps shared spaces clean and orderly." },
+    b: { letter: "C", trait: "Casual", description: "Relaxed about mess and chores." },
+  },
+  {
+    name: "Privacy & social",
+    salt: "social",
+    a: { letter: "P", trait: "Private", description: "Values quiet and personal space." },
+    b: { letter: "O", trait: "Open", description: "Enjoys shared time, hosting, and guests." },
+  },
+  {
+    name: "Lifestyle rhythm",
+    salt: "rhythm",
+    a: { letter: "S", trait: "Stable", description: "Keeps a steady, predictable routine." },
+    b: { letter: "F", trait: "Fluid", description: "Goes with the flow on schedules." },
+  },
+  {
+    name: "Rules & boundaries",
+    salt: "rules",
+    a: { letter: "D", trait: "Defined", description: "Likes clear agreements and boundaries." },
+    b: { letter: "L", trait: "Laid-back", description: "Prefers things flexible and informal." },
+  },
+] as const;
+
+/** Per-axis weight toward the 0-100 compatibility score (cleanliness, social, rhythm, rules). */
+export const AXIS_WEIGHTS = [35, 30, 15, 20];
+
+/** All 16 housemate types, keyed by their four-letter code. */
+export const PERSONAS: Record<string, PersonaMeta> = {
   NPSD: {
+    code: "NPSD",
     title: "The Peaceful Planner",
+    emoji: "🦉",
+    description: "Tidy, private, and routine-driven with clear house rules.",
     animal: "owl",
     scene: "Quiet bedroom desk — made bed, aligned slippers, color-coded wall calendar",
     expression: "Peaceful, focused, slightly proud",
     props: ["checklist", "desk lamp", "wall calendar", "tea mug"],
+    accessories: "matte round glasses, slim tie, clipboard, organized desk setup",
+    characterDirection:
+      "Calm authority: tidy, private, rule-minded. Focused planner energy — proud and peaceful, not bubbly.",
     palette: {
       bgFrom: "#e8f0fa",
       bgTo: "#faf6ee",
@@ -45,11 +73,17 @@ export const HMTI_AVATARS: Record<string, HmtiAvatarMeta> = {
     householdEnergy: "Soft lamp. Clean counter. Calendar synced.",
   },
   NPSL: {
+    code: "NPSL",
     title: "The Quiet Minimalist",
+    emoji: "🐱",
+    description: "Clean, private, and low-drama — keeps to themselves.",
     animal: "cat",
     scene: "Minimal cozy bedroom — clean bed, book, plant by window, closed door",
     expression: "Relaxed, content, quietly confident",
     props: ["book", "plant", "folded blanket", "do not disturb sign"],
+    accessories: "minimal wire-frame glasses, single book, clean lines, closed-door energy",
+    characterDirection:
+      "Quiet confidence: minimal, elegant, self-contained. Cool solitude — content alone, not shy-cute.",
     palette: {
       bgFrom: "#e8f0e8",
       bgTo: "#f5f2eb",
@@ -66,11 +100,17 @@ export const HMTI_AVATARS: Record<string, HmtiAvatarMeta> = {
     householdEnergy: "Closed door. Fresh sheets. One plant. Silence.",
   },
   NPFD: {
+    code: "NPFD",
     title: "The Independent Organizer",
+    emoji: "🦊",
+    description: "Organized space, flexible schedule, strong boundaries.",
     animal: "fox",
     scene: "Night desk — planner, sticky notes, laptop glow, headphones and backpack nearby",
     expression: "Alert, capable, self-sufficient",
     props: ["laptop", "planner", "sticky notes", "headphones"],
+    accessories: "over-ear headphones, neon sticky notes, laptop glow, planner — night-owl organizer",
+    characterDirection:
+      "Sharp independent: organized chaos, night desk, capable loner. Stylish fox energy — clever, not cuddly.",
     palette: {
       bgFrom: "#ede8f5",
       bgTo: "#f5ebe8",
@@ -87,11 +127,17 @@ export const HMTI_AVATARS: Record<string, HmtiAvatarMeta> = {
     householdEnergy: "Desk lamp on. Planner open. Headphones ready.",
   },
   NPFL: {
+    code: "NPFL",
     title: "The Clean Ghost",
+    emoji: "✨",
+    description: "Barely seen but keeps shared spaces spotless.",
     animal: "ferret",
     scene: "Spotless hallway — ferret with laundry basket, sparkle trail, half-open bedroom door",
     expression: "Shy, sweet, mysterious",
     props: ["laundry basket", "folded towels", "sparkles", "bedroom door"],
+    accessories: "hoodie half-on, laundry basket, quiet hallway vibe, low-profile cap",
+    characterDirection:
+      "Low-key legend: barely seen, always responsible. Mysterious clean ghost — subtle, not timid.",
     palette: {
       bgFrom: "#e8faf5",
       bgTo: "#f0f5fa",
@@ -108,11 +154,17 @@ export const HMTI_AVATARS: Record<string, HmtiAvatarMeta> = {
     householdEnergy: "Empty couch. Folded towels. Footsteps you barely hear.",
   },
   NOSD: {
+    code: "NOSD",
     title: "The House Captain",
+    emoji: "🐕",
+    description: "Friendly leader who runs the home with snacks and systems.",
     animal: "golden-retriever",
     scene: "Bright kitchen — clipboard, chore chart, freshly baked cookies, matching mugs",
     expression: "Confident, welcoming, excited",
     props: ["clipboard", "chore chart", "cookies", "fridge magnets"],
+    accessories: "captain clipboard, bandana, fresh cookies, chore chart — friendly leader not mascot plush",
+    characterDirection:
+      "Friendly captain: runs the house with systems and warmth. Leader energy — welcoming, not hyper.",
     palette: {
       bgFrom: "#fff8e0",
       bgTo: "#e8f4ff",
@@ -129,11 +181,17 @@ export const HMTI_AVATARS: Record<string, HmtiAvatarMeta> = {
     householdEnergy: "Chore chart on fridge. Cookies in oven. Group chat buzzing.",
   },
   NOSL: {
+    code: "NOSL",
     title: "The Friendly Maintainer",
+    emoji: "🐶",
+    description: "Warm, tidy, and easygoing — everyone likes them.",
     animal: "corgi",
     scene: "Cozy living room — corgi watering plants, neat couch, snack bowl on table",
     expression: "Cheerful, approachable, relaxed",
     props: ["watering can", "houseplants", "snack bowl", "throw pillows"],
+    accessories: "bandana, watering can, neat living room, approachable host energy",
+    characterDirection:
+      "Neighborhood favorite: tidy, social, balanced. Warm host — relaxed smile, not cartoon cheer.",
     palette: {
       bgFrom: "#fff0e8",
       bgTo: "#f0f5e8",
@@ -150,11 +208,17 @@ export const HMTI_AVATARS: Record<string, HmtiAvatarMeta> = {
     householdEnergy: "Plants watered. Snacks out. Couch ready for one more.",
   },
   NOFD: {
+    code: "NOFD",
     title: "The Social Organizer",
+    emoji: "🐼",
+    description: "Social and clean — spontaneous plans, scheduled responsibly.",
     animal: "red-panda",
     scene: "Clean living room hangout setup — phone with group chat, snack checklist, fairy lights",
     expression: "Excited, efficient, charming",
     props: ["group chat", "checklist", "snack tray", "fairy lights"],
+    accessories: "phone with group chat, snack checklist, fairy lights, lanyard with keys — social coordinator",
+    characterDirection:
+      "Social architect: plans hangouts, sets boundaries, group-chat energy. Charismatic organizer — cool and in control.",
     palette: {
       bgFrom: "#ffe8e8",
       bgTo: "#e8f5f5",
@@ -171,11 +235,17 @@ export const HMTI_AVATARS: Record<string, HmtiAvatarMeta> = {
     householdEnergy: "Fairy lights on. Snack tray ready. Calendar has a fun block.",
   },
   NOFL: {
+    code: "NOFL",
     title: "The Clean Free Spirit",
+    emoji: "🦜",
+    description: "Playful energy with surprisingly clean counters.",
     animal: "parrot",
     scene: "Tidy lively living room — plants, speaker, vinyl, fairy lights, clean coffee table",
     expression: "Joyful, spontaneous, carefree",
     props: ["speaker", "plants", "vinyl record", "fairy lights"],
+    accessories: "headphones around neck, party shades on head, vinyl pin, clean but lively space",
+    characterDirection:
+      "Main-character roommate: fun, clean counters, spontaneous. Expressive parrot vibe — joyful but stylish.",
     palette: {
       bgFrom: "#e8f8ff",
       bgTo: "#fff0f5",
@@ -192,11 +262,17 @@ export const HMTI_AVATARS: Record<string, HmtiAvatarMeta> = {
     householdEnergy: "Music on. Counters wiped. Friends might drop by.",
   },
   CPSD: {
+    code: "CPSD",
     title: "The Boundary Keeper",
+    emoji: "🐢",
+    description: "Private and steady — clear boundaries, calm energy.",
     animal: "turtle",
     scene: "Bedroom doorway — please knock sign, labeled shelf, personal snack bin, cozy clutter",
     expression: "Calm, firm, comfortable",
     props: ["please knock sign", "snack bin", "blanket", "labeled shelf"],
+    accessories: "door knock sign, labeled snack bin, firm calm posture, boundary energy",
+    characterDirection:
+      "Boundary boss: calm, firm, protective of space. Grounded turtle — respectful tension, not aggressive.",
     palette: {
       bgFrom: "#e8f0e8",
       bgTo: "#f5f0e8",
@@ -213,11 +289,17 @@ export const HMTI_AVATARS: Record<string, HmtiAvatarMeta> = {
     householdEnergy: "Knock first. Labels on shelves. Your stuff stays yours.",
   },
   CPSL: {
+    code: "CPSL",
     title: "The Easygoing Independent",
+    emoji: "🐼",
+    description: "Chill, private, and low-pressure — no drama.",
     animal: "panda",
     scene: "Beanbag corner — headphones, snack, cozy slightly messy but not gross room",
     expression: "Relaxed, neutral, unbothered",
     props: ["headphones", "beanbag", "snack bowl", "game controller"],
+    accessories: "headphones, beanbag, snack bowl — unbothered chill",
+    characterDirection:
+      "Chill independent: low drama, private, steady. Unbothered panda — neutral cool, not lazy-cute.",
     palette: {
       bgFrom: "#f0f0f0",
       bgTo: "#f5f5eb",
@@ -234,11 +316,17 @@ export const HMTI_AVATARS: Record<string, HmtiAvatarMeta> = {
     householdEnergy: "Beanbag dent. Headphones on. Snacks within reach.",
   },
   CPFD: {
+    code: "CPFD",
     title: "The Flexible Boundary Setter",
+    emoji: "🦔",
+    description: "Night owl with flexible routine and clear lines.",
     animal: "hedgehog",
     scene: "Late-night desk — hoodie blanket, laptop, mug, quiet-zone sign, gentle clutter",
     expression: "Focused, cozy, cautious",
     props: ["laptop", "hoodie blanket", "mug", "quiet-zone sign"],
+    accessories: "hoodie blanket, laptop, quiet-zone sign, late-night focus",
+    characterDirection:
+      "Night-owl with rules: flexible schedule, clear lines. Cozy but guarded hedgehog — focused, not scared.",
     palette: {
       bgFrom: "#ede8f8",
       bgTo: "#f5f0e8",
@@ -255,11 +343,17 @@ export const HMTI_AVATARS: Record<string, HmtiAvatarMeta> = {
     householdEnergy: "Laptop glow. Hoodie on. Quiet after midnight.",
   },
   CPFL: {
+    code: "CPFL",
     title: "The True Ghost Roommate",
+    emoji: "🦇",
+    description: "Seen once a week — pays rent, barely interferes.",
     animal: "bat",
     scene: "Dim cozy bedroom — upside-down bat vibe, laptop glow, snacks, blanket pile",
     expression: "Sleepy, shy, amused",
     props: ["laptop", "hoodie", "snacks", "blanket pile"],
+    accessories: "sleep mask on forehead, hoodie, snack stash — ghost roommate vibe",
+    characterDirection:
+      "True ghost: rare sightings, pays rent, zero friction. Sleepy bat energy — amused, not helpless.",
     palette: {
       bgFrom: "#e8e8f5",
       bgTo: "#f0f0f8",
@@ -276,11 +370,17 @@ export const HMTI_AVATARS: Record<string, HmtiAvatarMeta> = {
     householdEnergy: "Lights low. Door half-shut. You forget they're home.",
   },
   COSD: {
+    code: "COSD",
     title: "The Communal Manager",
+    emoji: "🫶",
+    description: "Warm communal living with fair shared expectations.",
     animal: "capybara",
     scene: "Cozy roommate dinner — whiteboard labeled house stuff, shared food, mismatched plates",
     expression: "Kind, calm, responsible",
     props: ["dinner table", "grocery list", "whiteboard", "mugs"],
+    accessories: "apron, shared dinner spread, house whiteboard — communal manager",
+    characterDirection:
+      "Communal anchor: fair, warm, responsible shared living. Calm capybara host — grounded leader.",
     palette: {
       bgFrom: "#fff5e8",
       bgTo: "#f0f5e8",
@@ -297,11 +397,17 @@ export const HMTI_AVATARS: Record<string, HmtiAvatarMeta> = {
     householdEnergy: "Shared dinner. Whiteboard updated. Everyone chipped in.",
   },
   COSL: {
+    code: "COSL",
     title: "The Warm Housemate",
+    emoji: "🐻",
+    description: "Emotionally cozy — makes the apartment feel like home.",
     animal: "bear",
     scene: "Cozy couch — blanket, tea, board game, snack tray, soft lived-in warmth",
     expression: "Gentle, happy, welcoming",
     props: ["tea mugs", "couch blanket", "board game", "snack tray"],
+    accessories: "blanket scarf, tea tray, warm couch hangout",
+    characterDirection:
+      "Emotional comfort: cozy, social, steady. Gentle bear warmth — welcoming, not childish soft.",
     palette: {
       bgFrom: "#fff5e8",
       bgTo: "#ffeef0",
@@ -318,11 +424,17 @@ export const HMTI_AVATARS: Record<string, HmtiAvatarMeta> = {
     householdEnergy: "Tea brewing. Blanket pile. Someone's always welcome.",
   },
   COFD: {
+    code: "COFD",
     title: "The Social Negotiator",
+    emoji: "🦝",
+    description: "Brings energy and group-chat etiquette to flexible living.",
     animal: "raccoon",
     scene: "Lively living room — snacks in one hand, guest-rules whiteboard in the other",
     expression: "Mischievous, persuasive, reasonable",
     props: ["snack bags", "whiteboard", "group chat", "string lights"],
+    accessories: "snack bandolier, guest-rules board, mischievous confident grin energy",
+    characterDirection:
+      "Social negotiator: brings energy + etiquette. Clever raccoon — playful smirk, persuasive, not chaotic mess.",
     palette: {
       bgFrom: "#e8f0ff",
       bgTo: "#fff0e8",
@@ -339,11 +451,17 @@ export const HMTI_AVATARS: Record<string, HmtiAvatarMeta> = {
     householdEnergy: "String lights up. Guest rules posted. Snacks for everyone.",
   },
   COFL: {
+    code: "COFL",
     title: "The Party-Compatible Roommate",
+    emoji: "🦦",
+    description: "The living room is a lifestyle — fun and spontaneous.",
     animal: "otter",
     scene: "Colorful living room — otter on the couch with pizza, speaker blasting, string lights and confetti",
     expression: "Hyped, silly, charismatic",
     props: ["speaker", "pizza box", "disco ball", "string lights"],
+    accessories: "party shades, pizza slice, mini disco ball, speaker — hype but not childish",
+    characterDirection:
+      "Party-compatible: living room is the vibe. Otter hype — spontaneous fun, cool roommate not toddler energy.",
     palette: {
       bgFrom: "#e8f8ff",
       bgTo: "#fff0f8",
@@ -361,6 +479,8 @@ export const HMTI_AVATARS: Record<string, HmtiAvatarMeta> = {
   },
 };
 
-export function getHmtiAvatarMeta(code: string): HmtiAvatarMeta {
-  return HMTI_AVATARS[code] ?? HMTI_AVATARS.NPSD;
-}
+/** All 16 HMTI codes in canonical order. */
+export const HMTI_CODES = Object.keys(PERSONAS);
+
+/** Back-compat alias — prefer {@link PERSONAS}. */
+export const HMTI_AVATARS = PERSONAS;

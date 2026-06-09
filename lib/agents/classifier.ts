@@ -1,7 +1,7 @@
 import { getOpenAIAsync, MODEL } from "@/lib/openai";
 import { formatTranscript } from "./format";
-import { buildPersonaFromAxes } from "@/lib/business-logic";
-import type { Persona } from "@/lib/business-logic";
+import { buildPersonaFromAxes } from "@/lib/personas";
+import type { Persona } from "@/lib/personas";
 import type { Message } from "@/lib/transcriptStore";
 import { weave } from "@/lib/weave";
 

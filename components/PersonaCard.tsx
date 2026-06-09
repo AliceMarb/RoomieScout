@@ -1,4 +1,4 @@
-import type { Persona } from "@/lib/business-logic";
+import type { Persona } from "@/lib/personas";
 import PersonaSpectrum from "@/components/PersonaSpectrum";
 import ShareableAvatarCard from "@/components/ShareableAvatarCard";
 

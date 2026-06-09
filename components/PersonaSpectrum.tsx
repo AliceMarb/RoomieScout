@@ -1,4 +1,4 @@
-import type { Persona } from "@/lib/business-logic";
+import type { Persona } from "@/lib/personas";
 
 export default function PersonaSpectrum({ persona }: { persona: Persona }) {
   return (
