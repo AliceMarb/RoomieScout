@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { SCOUT_INTRO, SCOUT_INTRO_SPOKEN } from "@/lib/interview";
-import { textToSpeech } from "@/lib/elevenlabs";
+import { textToSpeech } from "@/lib/voice";
 import { createInitialInterviewState, getNextQuestion } from "@/lib/agents";
 import type { Message } from "@/lib/transcriptStore";
 

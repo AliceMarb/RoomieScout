@@ -34,3 +34,7 @@ next-env.d.ts
 # IDE
 .vscode/
 .idea/
+
+# local voice (dev) — python venv + downloaded model files
+.venv/
+/models/
