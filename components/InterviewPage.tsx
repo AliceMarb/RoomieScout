@@ -148,6 +148,32 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
     return res.json() as Promise<T>;
   }
 
+  // Turn raw API/network errors into something a user should see. The original
+  // technical message (e.g. ElevenLabs "quota_exceeded") is logged for us but
+  // never shown — users get a calm, actionable line instead.
+  function friendlyError(err: unknown): string {
+    const raw = err instanceof Error ? err.message : String(err);
+    console.error("[InterviewPage]", raw);
+
+    // Voice service out of credits / rate limited — the spoken voice is down,
+    // but typing still works.
+    if (/quota_exceeded|quota of|rate.?limit|429|too many requests/i.test(raw)) {
+      return mode === "voice"
+        ? "Homi's voice is taking a quick break. Tap Chat below to keep going by text."
+        : "Homi's a little overloaded right now — give it a moment and try again.";
+    }
+    // Couldn't transcribe the recording.
+    if (/speech-to-text|STT|empty_file|invalid_content|transcri/i.test(raw)) {
+      return "I didn't quite catch that. Hold the orb and try again, or switch to Chat.";
+    }
+    // Network dropped.
+    if (/failed to fetch|networkerror|load failed|network/i.test(raw)) {
+      return "Looks like the connection dropped. Check your internet and try again.";
+    }
+    // Anything else.
+    return "Something went wrong on my end. Give it another try in a moment.";
+  }
+
   async function handleStart(tts = ttsEnabled) {
     setStarted(true);
 
@@ -168,7 +194,7 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
       }
       setCanRecord(true);
     } catch (err) {
-      setLastAiMessage(`Error: ${(err as Error).message}`);
+      setLastAiMessage(friendlyError(err));
     }
   }
 
@@ -279,7 +305,7 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
     } catch (err) {
       setTranscribing(false);
       setScoutThinking(false);
-      setLastAiMessage(`Error: ${(err as Error).message}`);
+      setLastAiMessage(friendlyError(err));
       setCanRecord(true);
     }
   }
@@ -306,7 +332,7 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
       await afterRespond(data);
     } catch (err) {
       setScoutThinking(false);
-      setLastAiMessage(`Error: ${(err as Error).message}`);
+      setLastAiMessage(friendlyError(err));
       setCanRecord(true);
     }
   }
