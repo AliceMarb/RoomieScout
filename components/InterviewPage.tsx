@@ -454,10 +454,22 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
                 <span className="font-display text-5xl font-bold text-teal">{"✓"}</span>
               ) : orbState === "listening" ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src="/user-avatar.svg" alt="You" className="h-20 w-20 opacity-90" />
+                <img
+                  src="/user-avatar.svg"
+                  alt="You"
+                  draggable={false}
+                  className="pointer-events-none h-20 w-20 select-none opacity-90"
+                  style={{ WebkitTouchCallout: "none" }}
+                />
               ) : (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src="/scout-avatar.png" alt="Scout" className="h-24 w-24 rounded-full sm:h-28 sm:w-28" />
+                <img
+                  src="/scout-avatar.png"
+                  alt="Scout"
+                  draggable={false}
+                  className="pointer-events-none h-24 w-24 select-none rounded-full sm:h-28 sm:w-28"
+                  style={{ WebkitTouchCallout: "none" }}
+                />
               )}
             </button>
           </div>
