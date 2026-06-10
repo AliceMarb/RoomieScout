@@ -401,7 +401,7 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
           <div className="mb-8 min-h-[2.5rem] max-w-xs text-center sm:mb-10">
             {lastAiMessage && (
               <p className="text-[15px] font-medium leading-relaxed text-ink/90 transition-opacity duration-500">
-                &ldquo;{lastAiMessage}&rdquo;
+                {lastAiMessage}
               </p>
             )}
           </div>
