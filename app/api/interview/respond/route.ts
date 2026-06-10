@@ -1,12 +1,9 @@
 import { NextResponse } from "next/server";
-import { SCOUT_CLOSING } from "@/lib/interview";
-import { speechToText, textToSpeech } from "@/lib/voice";
-import { getNextQuestion, classifyPersona } from "@/lib/agents";
-import { createFlowFromInterview, getFlow, updateFlow } from "@/lib/store";
-import { computeCompatibility } from "@/lib/personas";
-import { formatTranscript } from "@/lib/agents/format";
-import type { InterviewState } from "@/lib/agents";
-import type { Message } from "@/lib/transcriptStore";
+import { SCOUT_CLOSING, SCOUT_DIDNT_HEAR, SCOUT_DIDNT_HEAR_SPOKEN } from "@/concepts/interview/copy";
+import { speechToText, textToSpeech } from "@/concepts/voice";
+import { getNextQuestion } from "@/concepts/interview";
+import type { InterviewState, Message } from "@/concepts/interview";
+import { onInterviewComplete } from "@/concepts/syncs";
 
 export async function POST(req: Request) {
   try {
@@ -45,6 +42,17 @@ export async function POST(req: Request) {
       flowId = (formData.get("flowId") as string | null) ?? null;
     }
 
+    if (userText.length < 3) {
+      const retryAudio = tts ? await textToSpeech(SCOUT_DIDNT_HEAR_SPOKEN) : null;
+      return NextResponse.json({
+        done: false,
+        question: SCOUT_DIDNT_HEAR,
+        audio: retryAudio ? retryAudio.toString("base64") : null,
+        interviewState,
+        transcript,
+      });
+    }
+
     transcript.push({ speaker: "user", text: userText });
 
     const result = await getNextQuestion(transcript, interviewState);
@@ -52,30 +60,10 @@ export async function POST(req: Request) {
     if ("done" in result) {
       transcript.push({ speaker: "ai", text: SCOUT_CLOSING });
 
-      const [closingAudio, persona] = await Promise.all([
+      const [closingAudio, { persona, redirectTo }] = await Promise.all([
         tts ? textToSpeech(SCOUT_CLOSING) : Promise.resolve(null),
-        classifyPersona(transcript),
+        onInterviewComplete(transcript, flowId),
       ]);
-
-      const transcriptText = formatTranscript(transcript);
-      let redirectTo: string;
-
-      if (flowId) {
-        const flow = await getFlow(flowId);
-        if (flow) {
-          const compat = computeCompatibility(flow.initiatorPersona, persona);
-          await updateFlow(flowId, {
-            roommateInput: transcriptText,
-            roommatePersona: persona,
-            result: compat,
-            resultsReadyAt: Date.now() + 2500,
-          });
-        }
-        redirectTo = `/results/${flowId}`;
-      } else {
-        const flow = await createFlowFromInterview(transcriptText, persona);
-        redirectTo = `/share/${flow.id}`;
-      }
 
       return NextResponse.json({
         done: true,

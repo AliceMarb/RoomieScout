@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { DEBUG_AGENTS } from "@/lib/config";
+import { DEBUG_AGENTS } from "@/infrastructure/config";
 import { Wordmark, cn } from "@/components/ui";
 
 type Message = { speaker: "ai" | "user"; text: string; domain?: string };
@@ -401,7 +401,7 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
           <div className="mb-8 min-h-[2.5rem] max-w-xs text-center sm:mb-10">
             {lastAiMessage && (
               <p className="text-[15px] font-medium leading-relaxed text-ink/90 transition-opacity duration-500">
-                &ldquo;{lastAiMessage}&rdquo;
+                {lastAiMessage}
               </p>
             )}
           </div>

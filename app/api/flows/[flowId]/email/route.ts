@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getFlow, updateFlow } from "@/lib/store";
+import { getPairing, updatePairing } from "@/concepts/pairing";
 
 // POST /api/flows/[flowId]/email — store the initiator's email so we can notify
 // them when results are ready.
@@ -8,7 +8,7 @@ export async function POST(
   { params }: { params: Promise<{ flowId: string }> },
 ) {
   const { flowId } = await params;
-  if (!(await getFlow(flowId))) {
+  if (!(await getPairing(flowId))) {
     return NextResponse.json({ error: "Flow not found" }, { status: 404 });
   }
 
@@ -24,6 +24,6 @@ export async function POST(
     return NextResponse.json({ error: "email is required" }, { status: 400 });
   }
 
-  await updateFlow(flowId, { initiatorEmail: email });
+  await updatePairing(flowId, { initiatorEmail: email });
   return NextResponse.json({ ok: true });
 }

@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { SCOUT_INTRO, SCOUT_INTRO_SPOKEN } from "@/lib/interview";
-import { textToSpeech } from "@/lib/voice";
-import { createInitialInterviewState, getNextQuestion } from "@/lib/agents";
-import type { Message } from "@/lib/transcriptStore";
+import { SCOUT_INTRO, SCOUT_INTRO_SPOKEN } from "@/concepts/interview/copy";
+import { textToSpeech } from "@/concepts/voice";
+import { createInitialInterviewState, getNextQuestion } from "@/concepts/interview";
+import type { Message } from "@/concepts/interview";
 
 export async function POST(req: Request) {
   try {

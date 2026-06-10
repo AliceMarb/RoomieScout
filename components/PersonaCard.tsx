@@ -1,4 +1,4 @@
-import type { Persona } from "@/lib/personas";
+import type { Persona } from "@/concepts/personas";
 import PersonaSpectrum from "@/components/PersonaSpectrum";
 import ShareableAvatarCard from "@/components/ShareableAvatarCard";
 

@@ -2,7 +2,7 @@ import FlowNotFound from "@/components/FlowNotFound";
 import PersonaCard from "@/components/PersonaCard";
 import SharePanel from "@/components/SharePanel";
 import { Card, PageShell, Wordmark } from "@/components/ui";
-import { getFlow } from "@/lib/store";
+import { getPairing } from "@/concepts/pairing";
 
 export default async function SharePage({
   params,
@@ -10,7 +10,7 @@ export default async function SharePage({
   params: Promise<{ flowId: string }>;
 }) {
   const { flowId } = await params;
-  const flow = await getFlow(flowId);
+  const flow = await getPairing(flowId);
 
   if (!flow) {
     return (

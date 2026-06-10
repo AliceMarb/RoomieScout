@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { createFlow } from "@/lib/store";
+import { createPairing } from "@/concepts/pairing";
 
-// POST /api/flows — create a new matching flow from the initiator's input.
+// POST /api/flows — create a new pairing from the initiator's input.
 export async function POST(request: Request) {
   let body: { text?: unknown };
   try {
@@ -15,6 +15,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "text is required" }, { status: 400 });
   }
 
-  const flow = await createFlow(text);
-  return NextResponse.json({ flowId: flow.id });
+  const pairing = await createPairing(text);
+  return NextResponse.json({ flowId: pairing.id });
 }
