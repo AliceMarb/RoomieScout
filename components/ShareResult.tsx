@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
-import type { Persona } from "@/lib/personas";
-import { getPersonaMeta } from "@/lib/personas";
+import type { Persona } from "@/concepts/personas";
+import { getPersonaMeta } from "@/concepts/personas";
 import ShareableAvatarCard from "@/components/ShareableAvatarCard";
 import { Button, Input, RuleLabel } from "@/components/ui";
 
