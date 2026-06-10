@@ -1,6 +1,5 @@
 import FlowNotFound from "@/components/FlowNotFound";
-import PersonaCard from "@/components/PersonaCard";
-import SharePanel from "@/components/SharePanel";
+import ShareResult from "@/components/ShareResult";
 import { Card, PageShell, Wordmark } from "@/components/ui";
 import { getPairing } from "@/concepts/pairing";
 
@@ -24,21 +23,12 @@ export default async function SharePage({
   return (
     <PageShell>
       <Wordmark />
-      <header className="mt-8">
+      <header className="mt-10">
         <span className="eyebrow">Your result</span>
-        <h1 className="mt-2 font-display text-3xl font-bold tracking-tight text-ink">
-          Meet your Housemate Type
-        </h1>
-        <p className="mt-2 max-w-md text-sm text-ink-soft">
-          This is your HMTI — save or share your avatar card, then send the test to a
-          potential roommate.
-        </p>
       </header>
-
-      <div className="mt-8 space-y-6">
-        <PersonaCard persona={flow.initiatorPersona} />
-        <Card className="p-6">
-          <SharePanel flowId={flowId} />
+      <div className="mt-6">
+        <Card className="p-8">
+          <ShareResult flowId={flowId} persona={flow.initiatorPersona} />
         </Card>
       </div>
     </PageShell>
