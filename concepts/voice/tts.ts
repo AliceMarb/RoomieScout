@@ -5,6 +5,7 @@
 // 500ing the interview.
 import { DEBUG_TTS, TTS_PROVIDER } from "@/infrastructure/config";
 import { elevenLabsTextToSpeech } from "./elevenlabs";
+import { deepgramTextToSpeech } from "./deepgram";
 import { kokoroTextToSpeech } from "./kokoro";
 
 export async function textToSpeech(text: string): Promise<Buffer | null> {
@@ -13,9 +14,9 @@ export async function textToSpeech(text: string): Promise<Buffer | null> {
     return null;
   }
   try {
-    return TTS_PROVIDER === "kokoro"
-      ? await kokoroTextToSpeech(text)
-      : await elevenLabsTextToSpeech(text);
+    if (TTS_PROVIDER === "kokoro") return await kokoroTextToSpeech(text);
+    if (TTS_PROVIDER === "deepgram") return await deepgramTextToSpeech(text);
+    return await elevenLabsTextToSpeech(text);
   } catch (err) {
     if (process.env.NODE_ENV === "development") {
       console.warn(
