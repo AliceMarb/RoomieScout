@@ -1,4 +1,4 @@
-# RoomieScout
+# Homi
 
 A Next.js app that matches potential roommates through a voice interview. Scout (an AI interviewer) speaks questions, listens to answers, and produces a **Housemate Type** (HMTI) for each person. Once both people complete the interview, a compatibility score and breakdown is shown.
 
@@ -65,6 +65,13 @@ Alice does the voice interview
 ```
 
 > **Note:** Anyone with the flowId link can view the results — there is no login or email gating yet. The flowId is a UUID (hard to guess, but not secret if shared further).
+
+## Test URLs (dev only)
+
+| URL | What it shows |
+| --- | --- |
+| `http://localhost:3000/results/dev-test` | Fully populated results page — two personas (The Peaceful Planner vs The Clean Ghost), 65/100 score, axis breakdown, dealbreakers, upsell card. No interview needed. Any `dev-*` ID works. |
+| `http://localhost:3000/results/dev-alice` | Same seed, different name slug — useful for testing name display. |
 
 ## Environment variables
 
@@ -146,27 +153,37 @@ NEXT_PUBLIC_DEBUG_STT=false
 | `app/api/flows/[flowId]` | GET — returns flow status and results (once ready) |
 | `app/api/flows/[flowId]/respond` | POST — roommate submits their answers, triggers compatibility calculation + email |
 | `app/api/flows/[flowId]/email` | POST — (re)sends the results email to the initiator |
+| `app/api/flows/[flowId]/send-link` | POST — emails the results link to a given address |
+| `app/api/flows/[flowId]/name` | POST — saves a participant's display name |
+| `app/api/flows/pair` | POST — Rendezvous path: matches two people by their mutual email nomination |
+| `app/api/avatars/generate` | POST — generates an HMTI avatar image via DALL·E |
 
-### Key library files
+### Concept modules (`concepts/`)
 | Path | What it does |
 | --- | --- |
-| `lib/voice/` | All speech I/O — ElevenLabs TTS + STT, local Whisper STT, provider dispatch (see `lib/voice/README.md`) |
-| `lib/transcriptStore.ts` | In-memory interview session store (lost on server restart) |
-| `lib/store.ts` | In-memory matching flow store (lost on server restart) |
-| `lib/personas/` | **Everything about the 16 HMTI personas/avatars in one folder** — catalogue (copy, descriptions, avatar visuals), persona construction, compatibility scoring, and avatar image generation. See [`lib/personas/README.md`](lib/personas/README.md). |
-| `lib/agents/` | Multi-agent interview orchestration (orchestrator + specialist agents) |
-| `lib/interview.ts` | Scout's static intro text and fallback questions |
-| `lib/scoutPrompt.ts` | Scout's system prompt (ready to wire to Claude) |
-| `lib/email.ts` | Nodemailer email helper |
-| `lib/config.ts` | Dev flags — debug TTS/STT, default user ID |
+| `concepts/interview/` | Interview session state, multi-agent orchestration, Scout copy |
+| `concepts/personas/` | All 16 HMTI persona types — catalogue, construction, compatibility scoring, avatar paths |
+| `concepts/pairing/` | Pairing store — connects two participants and produces a compatibility result |
+| `concepts/voice/` | All speech I/O — ElevenLabs TTS + STT, local Whisper STT + Kokoro TTS, provider dispatch |
+| `concepts/rendezvous/` | Email-based matching — lets two people find each other without sharing a link |
+| `concepts/notification.ts` | Email notification helper (Nodemailer / Gmail) |
+| `concepts/risk-assessment/` | **TODO** — paid Risk Assessment concept (not yet wired to routes or payment) |
+
+### Infrastructure (`infrastructure/`)
+| Path | What it does |
+| --- | --- |
+| `infrastructure/openai.ts` | OpenAI client singleton + model pin |
+| `infrastructure/kv.ts` | Key-value store abstraction (in-memory in dev, Redis-compatible in prod) |
+| `infrastructure/config.ts` | Dev flags — debug TTS/STT, default user ID |
+| `infrastructure/weave.ts` | Weave tracing setup (optional observability) |
 
 ## Data storage
 
-**Everything is currently in-memory** — no database. Data is lost on server restart and not shared across serverless instances in production. Before going live with real users, replace `lib/store.ts` and `lib/transcriptStore.ts` with a real database (Supabase, Vercel Postgres, etc.).
+**Everything is currently in-memory** — no database. Data is lost on server restart and not shared across serverless instances in production. Before going live with real users, replace the KV store (`infrastructure/kv.ts`) with a real backend (Upstash Redis, Supabase, etc.).
 
 ## Customising Scout
 
-- Edit questions/intro: `lib/interview.ts`
-- Edit Scout's persona and reasoning: `lib/scoutPrompt.ts`
-- Edit the multi-agent logic: `lib/agents/orchestrator.ts` and `lib/agents/specialist.ts`
-- Edit HMTI persona types, descriptions, avatars, and compatibility scoring: `lib/personas/` (start with `lib/personas/data.ts`)
+- Edit Scout's intro and closing lines: `concepts/interview/copy.ts`
+- Edit the multi-agent orchestration logic: `concepts/interview/agents/`
+- Edit HMTI persona types, descriptions, avatars, and compatibility scoring: `concepts/personas/` (start with `concepts/personas/data.ts`)
+- Edit voice providers and dispatch: `concepts/voice/` (see `docs/voice.md`)

@@ -17,11 +17,13 @@ export type AgentState = {
   domain: AgentDomain;
   satisfied: boolean;
   questionsAsked: number;
+  clarificationsAsked: number;
 };
 
 export type SpecialistResponse = {
   question: string;
   satisfied: boolean;
+  clarification_needed?: boolean;
 };
 
 export type OrchestratorDecision =

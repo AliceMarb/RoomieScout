@@ -6,6 +6,7 @@ import type { AgentDomain, InterviewState, OrchestratorDecision } from "./types"
 import { ALL_DOMAINS as DOMAINS } from "./types";
 import type { Message } from "../session";
 import { weave } from "@/infrastructure/weave";
+import { SCOUT_CLARIFY } from "../copy";
 
 const MAX_TURNS = 7;
 const MAX_QUESTIONS_PER_AGENT = 3;
@@ -17,6 +18,7 @@ export function createInitialInterviewState(): InterviewState {
       domain,
       satisfied: false,
       questionsAsked: 0,
+      clarificationsAsked: 0,
     };
   }
   return {
@@ -111,6 +113,12 @@ export const getNextQuestion = weave.op(async function getNextQuestion(
 
   const response = await getSpecialistQuestion(domain, transcript, agentState);
 
+  if (response.clarification_needed && agentState.clarificationsAsked < 1) {
+    agentState.clarificationsAsked += 1;
+    return { question: SCOUT_CLARIFY, domain };
+  }
+
+  agentState.clarificationsAsked = 0;
   agentState.questionsAsked += 1;
 
   if (response.satisfied || agentState.questionsAsked >= MAX_QUESTIONS_PER_AGENT) {
