@@ -1,0 +1,422 @@
+import type { AxisDef, QuizQuestion } from "./quiz-types";
+
+export const AXES: AxisDef[] = [
+  {
+    id: "cleanliness",
+    label: "Cleanliness Standard",
+    poles: [
+      { letter: "N", word: "Neat" },
+      { letter: "C", word: "Casual" },
+    ],
+  },
+  {
+    id: "social",
+    label: "Social Intensity",
+    poles: [
+      { letter: "P", word: "Private" },
+      { letter: "O", word: "Open" },
+    ],
+  },
+  {
+    id: "conflict",
+    label: "Conflict Style",
+    poles: [
+      { letter: "D", word: "Direct" },
+      { letter: "H", word: "Harmonious" },
+    ],
+  },
+  {
+    id: "structure",
+    label: "Structure Preference",
+    poles: [
+      { letter: "S", word: "Structured" },
+      { letter: "F", word: "Flexible" },
+    ],
+  },
+];
+
+// 15 dealbreaker questions — mixed in with axis questions, not shown as a separate block.
+export const DEALBREAKER_QUESTIONS: QuizQuestion[] = [
+  {
+    id: "db-01",
+    kind: "dealbreaker",
+    topic: "Smoking",
+    text: "No smoking — not in the flat, not outside the front door",
+  },
+  {
+    id: "db-02",
+    kind: "dealbreaker",
+    topic: "Pets",
+    text: "No pets in the flat, no exceptions",
+  },
+  {
+    id: "db-03",
+    kind: "dealbreaker",
+    topic: "Couples sharing a room",
+    text: "Living with a couple sharing one room is a hard no",
+  },
+  {
+    id: "db-04",
+    kind: "dealbreaker",
+    topic: "Mismatched sleep schedule",
+    text: "I can't live with someone whose schedule is 5+ hours off mine",
+  },
+  {
+    id: "db-05",
+    kind: "dealbreaker",
+    topic: "Frequent overnight guests",
+    text: "Regular overnight guests — more than a few times a month — is a dealbreaker",
+  },
+  {
+    id: "db-06",
+    kind: "dealbreaker",
+    topic: "WFH noise",
+    text: "Loud calls or video meetings at home all day is a dealbreaker",
+  },
+  {
+    id: "db-07",
+    kind: "dealbreaker",
+    topic: "Pungent cooking",
+    text: "Strong cooking smells regularly — fish, certain spices — is a dealbreaker",
+  },
+  {
+    id: "db-08",
+    kind: "dealbreaker",
+    topic: "Substances at home",
+    text: "Cannabis or other substances at home is a hard no",
+  },
+  {
+    id: "db-09",
+    kind: "dealbreaker",
+    topic: "Bathroom sharing",
+    text: "Sharing one bathroom with two or more people is a dealbreaker",
+  },
+  {
+    id: "db-10",
+    kind: "dealbreaker",
+    topic: "Late-night noise",
+    text: "Noise after midnight on weeknights — music, calls, guests — is a dealbreaker",
+  },
+  {
+    id: "db-11",
+    kind: "dealbreaker",
+    topic: "Cleanliness mismatch",
+    text: "A housemate with noticeably lower cleanliness standards is a dealbreaker",
+  },
+  {
+    id: "db-12",
+    kind: "dealbreaker",
+    topic: "Thermostat wars",
+    text: "Not being able to keep the flat at a comfortable temperature is a dealbreaker",
+  },
+  {
+    id: "db-13",
+    kind: "dealbreaker",
+    topic: "Noisy hobbies",
+    text: "Loud hobbies at home — instruments, gaming audio — is a dealbreaker",
+  },
+  {
+    id: "db-14",
+    kind: "dealbreaker",
+    topic: "Partner essentially living there",
+    text: "A partner who's over so often they're effectively a third tenant is a dealbreaker",
+  },
+  {
+    id: "db-15",
+    kind: "dealbreaker",
+    topic: "Using my food or belongings",
+    text: "Helping themselves to my food or things without asking is a dealbreaker",
+  },
+];
+
+// 40 axis questions — 5 per pole, 10 per axis — shuffled at quiz-start.
+export const AXIS_QUESTIONS: QuizQuestion[] = [
+  // Cleanliness — Neat (N)
+  {
+    id: "cl-n-01",
+    kind: "axis",
+    axis: "cleanliness",
+    pole: "N",
+    text: "You wipe down the stovetop after cooking, even for a quick meal",
+  },
+  {
+    id: "cl-n-02",
+    kind: "axis",
+    axis: "cleanliness",
+    pole: "N",
+    text: "A pile of dishes in the sink at the start of the day would affect your mood",
+  },
+  {
+    id: "cl-n-03",
+    kind: "axis",
+    axis: "cleanliness",
+    pole: "N",
+    text: "You'd notice when the kitchen bin needs emptying before it actually overflows",
+  },
+  {
+    id: "cl-n-04",
+    kind: "axis",
+    axis: "cleanliness",
+    pole: "N",
+    text: "A bathroom that feels sticky or grimy would make you uncomfortable at home",
+  },
+  {
+    id: "cl-n-05",
+    kind: "axis",
+    axis: "cleanliness",
+    pole: "N",
+    text: "You prefer shared surfaces to be clear of personal clutter when nobody's actively using them",
+  },
+  // Cleanliness — Casual (C)
+  {
+    id: "cl-c-01",
+    kind: "axis",
+    axis: "cleanliness",
+    pole: "C",
+    text: "It's fine to leave dishes in the sink overnight if you're planning to deal with them in the morning",
+  },
+  {
+    id: "cl-c-02",
+    kind: "axis",
+    axis: "cleanliness",
+    pole: "C",
+    text: "Some clutter on surfaces is part of a lived-in home — you find that comfortable, not stressful",
+  },
+  {
+    id: "cl-c-03",
+    kind: "axis",
+    axis: "cleanliness",
+    pole: "C",
+    text: "You only feel the urge to clean when something is visibly bothering you, not on a set schedule",
+  },
+  {
+    id: "cl-c-04",
+    kind: "axis",
+    axis: "cleanliness",
+    pole: "C",
+    text: "A housemate who's relaxed about daily tidiness wouldn't stress you out",
+  },
+  {
+    id: "cl-c-05",
+    kind: "axis",
+    axis: "cleanliness",
+    pole: "C",
+    text: "You can comfortably have people over without tidying up first",
+  },
+  // Social — Private (P)
+  {
+    id: "so-p-01",
+    kind: "axis",
+    axis: "social",
+    pole: "P",
+    text: "After a full day out, you need quiet time at home to decompress — even if you enjoyed the day",
+  },
+  {
+    id: "so-p-02",
+    kind: "axis",
+    axis: "social",
+    pole: "P",
+    text: "You'd appreciate at least a day's heads-up before your housemate has people over",
+  },
+  {
+    id: "so-p-03",
+    kind: "axis",
+    axis: "social",
+    pole: "P",
+    text: "You find it hard to focus or unwind if the common areas feel busy or loud",
+  },
+  {
+    id: "so-p-04",
+    kind: "axis",
+    axis: "social",
+    pole: "P",
+    text: "You could comfortably spend a whole weekend at home without much social interaction",
+  },
+  {
+    id: "so-p-05",
+    kind: "axis",
+    axis: "social",
+    pole: "P",
+    text: "A housemate who doesn't expect daily small talk when you pass in the kitchen sounds ideal",
+  },
+  // Social — Open (O)
+  {
+    id: "so-o-01",
+    kind: "axis",
+    axis: "social",
+    pole: "O",
+    text: "You enjoy it when your housemate's friends end up staying for the evening or dinner",
+  },
+  {
+    id: "so-o-02",
+    kind: "axis",
+    axis: "social",
+    pole: "O",
+    text: "A spontaneous flat dinner or shared movie night sounds like a good time to you",
+  },
+  {
+    id: "so-o-03",
+    kind: "axis",
+    axis: "social",
+    pole: "O",
+    text: "You'd happily use the lounge even if your housemate and their friends were hanging out there",
+  },
+  {
+    id: "so-o-04",
+    kind: "axis",
+    axis: "social",
+    pole: "O",
+    text: "A flat that often has people around sounds comfortable — maybe even appealing — to you",
+  },
+  {
+    id: "so-o-05",
+    kind: "axis",
+    axis: "social",
+    pole: "O",
+    text: "You'd be happy to share meals or snacks with a housemate fairly regularly",
+  },
+  // Conflict — Direct (D)
+  {
+    id: "co-d-01",
+    kind: "axis",
+    axis: "conflict",
+    pole: "D",
+    text: "If something your housemate was doing bothered you, you'd bring it up within a day or two",
+  },
+  {
+    id: "co-d-02",
+    kind: "axis",
+    axis: "conflict",
+    pole: "D",
+    text: "You'd rather have one awkward conversation than let an issue quietly build up",
+  },
+  {
+    id: "co-d-03",
+    kind: "axis",
+    axis: "conflict",
+    pole: "D",
+    text: "You'd feel comfortable being the one to initiate a house-rules conversation in the first week",
+  },
+  {
+    id: "co-d-04",
+    kind: "axis",
+    axis: "conflict",
+    pole: "D",
+    text: "If a shared bill was forgotten, you'd flag it directly the day you noticed",
+  },
+  {
+    id: "co-d-05",
+    kind: "axis",
+    axis: "conflict",
+    pole: "D",
+    text: "After resolving a house issue, you'd follow up to make sure things had actually shifted",
+  },
+  // Conflict — Harmonious (H)
+  {
+    id: "co-h-01",
+    kind: "axis",
+    axis: "conflict",
+    pole: "H",
+    text: "You'd let a small annoyance go rather than say something and risk making things awkward",
+  },
+  {
+    id: "co-h-02",
+    kind: "axis",
+    axis: "conflict",
+    pole: "H",
+    text: "You'd wait for the right moment to come up naturally rather than scheduling a hard conversation",
+  },
+  {
+    id: "co-h-03",
+    kind: "axis",
+    axis: "conflict",
+    pole: "H",
+    text: "If a housemate did something that bothered you once, you'd probably assume it won't happen again",
+  },
+  {
+    id: "co-h-04",
+    kind: "axis",
+    axis: "conflict",
+    pole: "H",
+    text: "Keeping the atmosphere at home smooth matters more to you than being heard on every minor issue",
+  },
+  {
+    id: "co-h-05",
+    kind: "axis",
+    axis: "conflict",
+    pole: "H",
+    text: "You'd find it easier to quietly adjust your own habits than confront a housemate about theirs",
+  },
+  // Structure — Structured (S)
+  {
+    id: "st-s-01",
+    kind: "axis",
+    axis: "structure",
+    pole: "S",
+    text: "You'd want a cleaning or chore rota in place within the first week of moving in",
+  },
+  {
+    id: "st-s-02",
+    kind: "axis",
+    axis: "structure",
+    pole: "S",
+    text: "You plan your week in advance most of the time — shopping, meals, upcoming plans",
+  },
+  {
+    id: "st-s-03",
+    kind: "axis",
+    axis: "structure",
+    pole: "S",
+    text: "Your daily routine is consistent enough that a housemate could roughly predict it",
+  },
+  {
+    id: "st-s-04",
+    kind: "axis",
+    axis: "structure",
+    pole: "S",
+    text: "You'd want shared costs and utility splits agreed in writing before moving in",
+  },
+  {
+    id: "st-s-05",
+    kind: "axis",
+    axis: "structure",
+    pole: "S",
+    text: "Not knowing whose turn it is to handle something around the house would genuinely bother you",
+  },
+  // Structure — Flexible (F)
+  {
+    id: "st-f-01",
+    kind: "axis",
+    axis: "structure",
+    pole: "F",
+    text: "You prefer to handle chores when they actually need doing rather than sticking to a rota",
+  },
+  {
+    id: "st-f-02",
+    kind: "axis",
+    axis: "structure",
+    pole: "F",
+    text: "You're fine with house arrangements evolving organically rather than being agreed upfront",
+  },
+  {
+    id: "st-f-03",
+    kind: "axis",
+    axis: "structure",
+    pole: "F",
+    text: "If your home routine changes at short notice, you adapt without much stress",
+  },
+  {
+    id: "st-f-04",
+    kind: "axis",
+    axis: "structure",
+    pole: "F",
+    text: "Going with the flow on shared house decisions sounds more comfortable than planning everything in advance",
+  },
+  {
+    id: "st-f-05",
+    kind: "axis",
+    axis: "structure",
+    pole: "F",
+    text: "A loosely structured home life suits you better than one where everything is planned out",
+  },
+];
