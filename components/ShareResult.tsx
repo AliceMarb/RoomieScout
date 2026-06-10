@@ -118,6 +118,9 @@ export default function ShareResult({
 
   return (
     <div className="space-y-6">
+      {/* TODO: back button click is not navigating back to result state — investigate
+          whether something upstream (Card, PageShell, or ShareableAvatarCard) is
+          swallowing the event or preventing the state update from re-rendering. */}
       <Button
         type="button"
         variant="ghost"
