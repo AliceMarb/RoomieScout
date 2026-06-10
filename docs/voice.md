@@ -3,7 +3,7 @@
 All speech I/O lives here. Import from the barrel, never the provider files:
 
 ```ts
-import { textToSpeech, speechToText } from "@/lib/voice";
+import { textToSpeech, speechToText } from "@/concepts/voice";
 ```
 
 | File | Role |

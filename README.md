@@ -43,7 +43,7 @@ echo "WHISPER_PYTHON=$(pwd)/.venv/bin/python" >> .env.local
 
 Then `npm run dev`. To force the cloud engines instead, set `STT_PROVIDER=elevenlabs`
 / `TTS_PROVIDER=elevenlabs` in `.env.local`. Full details, voices, and overrides:
-[lib/voice/README.md](lib/voice/README.md).
+[docs/voice.md](docs/voice.md).
 
 ## How a match works
 
