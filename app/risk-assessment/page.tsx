@@ -196,10 +196,11 @@ export default function RiskAssessmentPage() {
   const [answers, setAnswers] = useState<Record<string, boolean>>({});
   const [done, setDone] = useState(false);
 
-  // Shuffle all questions together — dealbreakers and axis questions intermixed.
-  const [allQuestions] = useState<QuizQuestion[]>(() =>
-    shuffle([...DEALBREAKER_QUESTIONS, ...AXIS_QUESTIONS]),
-  );
+  // Dealbreakers first, then axis questions in a randomised order.
+  const [allQuestions] = useState<QuizQuestion[]>(() => [
+    ...DEALBREAKER_QUESTIONS,
+    ...shuffle(AXIS_QUESTIONS),
+  ]);
 
   const pages = chunk(allQuestions, 5);
   const totalPages = pages.length;
