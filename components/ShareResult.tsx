@@ -118,13 +118,14 @@ export default function ShareResult({
 
   return (
     <div className="space-y-6">
-      <button
+      <Button
         type="button"
-        onClick={() => setStage("result")}
-        className="flex items-center gap-1.5 text-sm text-ink-soft hover:text-ink transition-colors"
+        variant="ghost"
+        onClick={() => { setStage("result"); setCopied(false); }}
+        className="-ml-2 w-fit"
       >
-        ← Back
-      </button>
+        &larr; Back
+      </Button>
 
       <RuleLabel>Share this link with a friend</RuleLabel>
 
