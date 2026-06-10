@@ -27,21 +27,25 @@ export const STT_PROVIDER: "elevenlabs" | "deepgram" | "whisper" =
 export const WHISPER_MODEL = process.env.WHISPER_MODEL ?? "base";
 export const WHISPER_PYTHON = process.env.WHISPER_PYTHON ?? "python3";
 
-// Deepgram model (only used when STT_PROVIDER=deepgram).
+// Deepgram models (only used when STT_PROVIDER/TTS_PROVIDER=deepgram).
 export const DEEPGRAM_MODEL = process.env.DEEPGRAM_MODEL ?? "nova-3";
+export const DEEPGRAM_TTS_MODEL = process.env.DEEPGRAM_TTS_MODEL ?? "aura-asteria-en";
 
 // Text-to-speech provider. Server-side only (TTS runs on the server).
 //   "elevenlabs" — cloud, needs ELEVENLABS_API_KEY
+//   "deepgram"   — cloud Aura, needs DEEPGRAM_API_KEY (cheaper than ElevenLabs)
 //   "kokoro"     — local kokoro-onnx, no quota/key (see lib/voice/README.md)
 // Default: kokoro in dev, elevenlabs in production. Set TTS_PROVIDER to override.
-export const TTS_PROVIDER: "elevenlabs" | "kokoro" =
+export const TTS_PROVIDER: "elevenlabs" | "deepgram" | "kokoro" =
   process.env.TTS_PROVIDER === "kokoro"
     ? "kokoro"
-    : process.env.TTS_PROVIDER === "elevenlabs"
-      ? "elevenlabs"
-      : process.env.NODE_ENV === "development"
-        ? "kokoro"
-        : "elevenlabs";
+    : process.env.TTS_PROVIDER === "deepgram"
+      ? "deepgram"
+      : process.env.TTS_PROVIDER === "elevenlabs"
+        ? "elevenlabs"
+        : process.env.NODE_ENV === "development"
+          ? "kokoro"
+          : "elevenlabs";
 
 // Local Kokoro tuning (only used when TTS_PROVIDER=kokoro). Model/voices paths
 // are relative to the project root unless absolute. Python defaults to the same
