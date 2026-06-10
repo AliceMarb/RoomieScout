@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import type { Persona } from "@/lib/personas";
 import { getPersonaMeta } from "@/lib/personas";
+import ShareableAvatarCard from "@/components/ShareableAvatarCard";
 import { Button, Input, RuleLabel } from "@/components/ui";
 
 type Stage = "result" | "match" | "saved";
@@ -76,6 +77,8 @@ export default function ShareResult({
   if (stage === "result") {
     return (
       <div className="space-y-8">
+        <ShareableAvatarCard persona={persona} />
+
         <div>
           <RuleLabel>Your Type</RuleLabel>
           <p className="mt-3 font-display text-4xl font-bold leading-tight text-ink">
@@ -115,6 +118,14 @@ export default function ShareResult({
 
   return (
     <div className="space-y-6">
+      <button
+        type="button"
+        onClick={() => setStage("result")}
+        className="flex items-center gap-1.5 text-sm text-ink-soft hover:text-ink transition-colors"
+      >
+        ← Back
+      </button>
+
       <RuleLabel>Share this link with a friend</RuleLabel>
 
       <Button
