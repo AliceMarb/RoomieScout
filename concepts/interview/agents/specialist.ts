@@ -48,6 +48,7 @@ Generate your next question or signal satisfaction.`;
     return {
       question: parsed.question ?? "",
       satisfied: parsed.satisfied,
+      clarification_needed: parsed.clarification_needed ?? false,
     };
   } catch (err) {
     console.error(`[specialist:${domain}]`, err);

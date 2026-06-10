@@ -1,5 +1,5 @@
 import { kv } from "@/infrastructure/kv";
-import { computePersona } from "@/concepts/personas";
+import { computePersona, buildPersonaFromAxes, computeCompatibility } from "@/concepts/personas";
 import type { CompatibilityResult, Persona } from "@/concepts/personas";
 
 export type Pairing = {
@@ -46,13 +46,44 @@ export async function getPairing(id: string): Promise<Pairing | null> {
 }
 
 async function seedDevPairing(id: string): Promise<Pairing> {
-  const label = id.slice("dev-".length) || "dev";
-  const name = label.charAt(0).toUpperCase() + label.slice(1);
+  // NPSD (Neat/Private/Stable/Defined) vs NPFL (Neat/Private/Fluid/Laid-back)
+  // Aligned on cleanliness + privacy (score 65); split on rhythm + rules.
+  const alexPersona = buildPersonaFromAxes([
+    { chosen: "left", strength: 78 },
+    { chosen: "left", strength: 72 },
+    { chosen: "left", strength: 80 },
+    { chosen: "left", strength: 75 },
+  ]);
+  const jordanPersona = buildPersonaFromAxes([
+    { chosen: "left", strength: 65 },
+    { chosen: "left", strength: 68 },
+    { chosen: "right", strength: 60 },
+    { chosen: "right", strength: 70 },
+  ]);
+  const base = computeCompatibility(alexPersona, jordanPersona);
+  const result: CompatibilityResult = {
+    ...base,
+    aiSummary:
+      "Alex and Jordan share the same instinct for a clean, quiet home — neither wants loud nights or a revolving door of guests. Where they'll feel friction is structure: Alex runs on a schedule and wants expectations in writing, while Jordan is happy to work things out as they come up. A quick conversation about a few baseline agreements before move-in should get them most of the way there.",
+    dealbreakers: [
+      { topic: "Cleanliness", personA: "Cleans on a weekly schedule", personB: "Keeps things spotless naturally", compatible: true },
+      { topic: "Guests", personA: "Quiet home, visitors by arrangement", personB: "Prefers to be unbothered", compatible: true },
+      { topic: "Noise", personA: "Quiet hours strictly observed", personB: "Generally quiet, flexible on weekends", compatible: true },
+      { topic: "Daily schedule", personA: "Consistent morning and evening routine", personB: "Hours vary, hard to predict", compatible: false },
+      { topic: "House rules", personA: "Wants agreements in writing", personB: "Prefers to keep things informal", compatible: false },
+      { topic: "Chores", personA: "Defined rota with clear expectations", personB: "Cleans when it needs it", compatible: false },
+    ],
+  };
   const pairing: Pairing = {
     id,
-    initiatorInput: `Dev-seeded persona "${name}": tidy, sociable, flexible schedule, likes clear house rules.`,
-    initiatorPersona: computePersona(id),
-    initiatorName: name,
+    initiatorInput: "Dev seed",
+    initiatorPersona: alexPersona,
+    initiatorName: "Alex",
+    roommateInput: "Dev seed",
+    roommatePersona: jordanPersona,
+    roommateName: "Jordan",
+    result,
+    resultsReadyAt: Date.now() - 1000,
     createdAt: new Date().toISOString(),
   };
   await kv.set(pairingKey(id), pairing, { ex: PAIRING_TTL_SECONDS });

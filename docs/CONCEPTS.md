@@ -182,6 +182,91 @@ send (email: String, url: String)
 
 ---
 
+**concept** Purchase [Item] *(TODO — not yet implemented)*
+
+**purpose** authorize a person's access to a paid product
+
+**principle**
+after a person initiates and completes payment for an item, that item is considered
+authorized and can be delivered; if the payment is later refunded, authorization is withdrawn
+
+**state**
+
+```
+a set of Purchases with
+  a payerEmail String
+  an item Item
+  a status of PENDING or COMPLETE or REFUNDED
+  a createdAt DateTime
+  an optional completedAt DateTime
+```
+
+**actions**
+
+initiate (email: String, item: Item): (p: Purchase)
+**effects** create a new pending purchase for email
+
+complete (p: Purchase)
+**requires** p is pending
+**effects** mark p complete; the item is now authorized
+
+refund (p: Purchase)
+**requires** p is complete
+**effects** mark p refunded; authorization is withdrawn
+
+---
+
+**concept** RiskAssessment [Participant] *(TODO — concept module exists at `concepts/risk-assessment/`; routes, payment wiring, and report generation not yet built)*
+
+**purpose** enable two people to receive a structured assessment of practical risks before committing to a shared living arrangement
+
+**principle**
+after both the initiator and their prospective roommate each complete a private structured deep-dive, they receive a joint Readiness Report — a risk score and a specific alignment agenda — built to walk through before signing a lease
+
+**state**
+
+```
+a set of RiskAssessments with
+  an initiatorEmail String
+  a roommateEmail String
+  a status of INVITED or IN_PROGRESS or COMPLETE
+  an optional pairingId String
+  an optional initiatorAnswers seq of Messages
+  an optional roommateAnswers seq of Messages
+  an optional report ReadinessReport
+
+a set of ReadinessReports with
+  a riskScore Number
+  a riskBand of LOW or MODERATE or HIGH
+  a set of AlignmentPoints
+  an aiNarrative String
+
+a set of AlignmentPoints with
+  a topic String
+  an initiatorStance String
+  a roommateStance String
+  an aligned Flag
+```
+
+**actions**
+
+create (initiatorEmail, roommateEmail: String, optional pairingId: String): (ra: RiskAssessment)
+**effects** create a new assessment in INVITED
+
+submitInitiator (ra: RiskAssessment, answers: seq Message)
+**requires** ra is INVITED
+**effects** record the initiator's answers; move ra to IN_PROGRESS
+
+submitRoommate (ra: RiskAssessment, answers: seq Message)
+**requires** ra is IN_PROGRESS
+**effects** record the roommate's answers; move ra to COMPLETE
+
+attachReport (ra: RiskAssessment, report: ReadinessReport)
+**requires** ra is COMPLETE
+**effects** record the generated report on ra
+
+---
+
 ## Syncs
 
 ```
@@ -220,6 +305,28 @@ sync matchByEmail (p1, p2: Participant)
 // A person asks to keep their results link.
 sync saveLink (pr: Pairing, email: String)
   Notification.send (email, resultsUrl (pr))
+
+// TODO: the three syncs below are not yet wired — pending Purchase and RiskAssessment route implementation.
+
+// When payment is complete, create the assessment and invite both people.
+sync createAssessmentOnPurchase (p: Purchase, initiatorEmail, roommateEmail: String, optional pairingId: String): (ra: RiskAssessment)
+  when Purchase.complete (p)
+  RiskAssessment.create (initiatorEmail, roommateEmail, pairingId, ra)
+  Notification.send (initiatorEmail, assessmentUrl (ra, role: initiator))
+  Notification.send (roommateEmail, assessmentUrl (ra, role: roommate))
+
+// When the initiator submits, notify the roommate that their turn has started.
+sync notifyRoommateOnInitiatorSubmit (ra: RiskAssessment)
+  when RiskAssessment.submitInitiator (ra)
+  Notification.send (ra.roommateEmail, assessmentUrl (ra, role: roommate))
+
+// When both have submitted, generate the report and notify both.
+sync generateAndDeliverReport (ra: RiskAssessment)
+  when RiskAssessment.submitRoommate (ra)
+  generate report from ra.initiatorAnswers and ra.roommateAnswers → report
+  RiskAssessment.attachReport (ra, report)
+  Notification.send (ra.initiatorEmail, reportUrl (ra))
+  Notification.send (ra.roommateEmail, reportUrl (ra))
 ```
 
 > **Branch note:** the sync status and TODOs below were written against the

@@ -1,10 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState, type FormEvent } from "react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 import type { CompatibilityResult, Persona } from "@/concepts/personas";
 import { getAvatarPublicPath } from "@/concepts/personas";
-import { Button, Card, Input, RuleLabel } from "@/components/ui";
+import { Button, Card, Input, RuleLabel, cn } from "@/components/ui";
 
 function SaveResultCard({ flowId }: { flowId: string }) {
   const [email, setEmail] = useState("");
@@ -12,7 +13,7 @@ function SaveResultCard({ flowId }: { flowId: string }) {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: { preventDefault(): void }) {
     event.preventDefault();
     setError(null);
     setSending(true);
@@ -120,6 +121,38 @@ function PersonaCard({ persona, label }: { persona: Persona; label: string }) {
 }
 
 
+function RiskAssessmentUpsellCard({ flowId }: { flowId: string }) {
+  return (
+    <Card className="overflow-hidden">
+      <div className="px-6 pt-6 pb-5">
+        <RuleLabel>You&apos;ve been warned</RuleLabel>
+        <h2 className="mt-4 font-display text-xl font-bold text-ink">
+          Roommate hell is just normal life with the wrong person.
+        </h2>
+        <p className="mt-3 text-sm leading-relaxed text-ink-soft">
+          It&apos;s not the big things that break it. It&apos;s whose turn it
+          is to buy toilet roll. It&apos;s the 1am kitchen noise. It&apos;s
+          finding out their &ldquo;tidy&rdquo; and your &ldquo;tidy&rdquo;
+          aren&apos;t the same thing. The Risk Assessment maps the financial,
+          practical, and uncomfortable gaps — before the contract locks you in.
+        </p>
+        <div className="mt-5 flex items-center gap-4">
+          <Link
+            href={`/risk-assessment/new?from=${flowId}`}
+            className={cn(
+              "inline-flex items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-medium transition-colors",
+              "bg-accent text-white hover:bg-accent-ink",
+            )}
+          >
+            Get the full picture
+          </Link>
+          <span className="font-display text-sm font-semibold text-ink tnum">$19</span>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
 export default function ResultsView({ flowId }: { flowId: string }) {
   const [state, setState] = useState<FlowState>({ status: "processing" });
 
@@ -176,7 +209,7 @@ export default function ResultsView({ flowId }: { flowId: string }) {
     );
   }
 
-  const { score, categories, summary, aiSummary, dealbreakers } = state.result;
+  const { score, summary, aiSummary, dealbreakers } = state.result;
   const nameA = state.initiatorName?.trim() || "Person 1";
   const nameB = state.roommateName?.trim() || "Person 2";
   const matchBand =
@@ -281,6 +314,8 @@ export default function ResultsView({ flowId }: { flowId: string }) {
           </table>
         </Card>
       )}
+
+      <RiskAssessmentUpsellCard flowId={flowId} />
 
       <SaveResultCard flowId={flowId} />
     </div>

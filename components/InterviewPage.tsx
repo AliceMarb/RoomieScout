@@ -176,6 +176,7 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
 
   async function handleStart(tts = ttsEnabled) {
     setStarted(true);
+    setScoutThinking(true);
 
     try {
       const data = await fetchJSON<StartResponse>("/api/interview/start", {
@@ -186,6 +187,7 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
 
       interviewStateRef.current = data.interviewState;
       serverTranscriptRef.current = data.transcript;
+      setScoutThinking(false);
       // Show the intro and the first question together so the Homi intro text
       // is visible on the orb (it would otherwise be overwritten instantly).
       addMessage("ai", data.intro ? `${data.intro} ${data.question}` : data.question, data.domain);
@@ -194,6 +196,8 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
       }
       setCanRecord(true);
     } catch (err) {
+      setScoutThinking(false);
+      setStarted(false);
       setLastAiMessage(friendlyError(err));
     }
   }
@@ -312,7 +316,7 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
 
   async function handleTextSubmit() {
     const text = textInput.trim();
-    if (!text || !canRecord) return;
+    if (!text || scoutThinking || done) return;
     setTextInput("");
     setCanRecord(false);
     setScoutThinking(true);
@@ -357,8 +361,6 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
     social: { border: "border-purple-400", badge: "bg-purple-100 text-purple-700", label: "Social" },
     personal_space: { border: "border-orange-400", badge: "bg-orange-100 text-orange-700", label: "Personal Space" },
   };
-
-  const recordDisabled = done || !canRecord;
 
   const statusText: Record<OrbState, string> = {
     ready: "Tap to start",
@@ -547,12 +549,14 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
           >
             {ttsEnabled ? "\u{1F50A}" : "\u{1F507}"}
           </button>
-          <button
-            onClick={handleModeToggle}
-            className="rounded-full border border-line bg-surface/80 px-4 py-1.5 text-xs font-medium uppercase tracking-eyebrow text-ink-soft backdrop-blur-sm transition-all hover:bg-surface"
-          >
-            Chat
-          </button>
+          {process.env.NODE_ENV === "development" && (
+            <button
+              onClick={handleModeToggle}
+              className="rounded-full border border-line bg-surface/80 px-4 py-1.5 text-xs font-medium uppercase tracking-eyebrow text-ink-soft backdrop-blur-sm transition-all hover:bg-surface"
+            >
+              Chat
+            </button>
+          )}
         </div>
 
         <audio ref={playerRef} className="hidden" />
@@ -630,7 +634,7 @@ export default function InterviewPage({ flowId }: { flowId?: string } = {}) {
           />
           <button
             onClick={handleTextSubmit}
-            disabled={recordDisabled || !textInput.trim()}
+            disabled={done || scoutThinking || !textInput.trim()}
             className="rounded-full bg-ink px-4 py-2 text-sm font-medium text-paper transition-colors disabled:opacity-40 hover:bg-ink/90"
           >
             Send
