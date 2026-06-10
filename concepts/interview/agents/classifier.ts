@@ -1,9 +1,9 @@
-import { getOpenAIAsync, MODEL } from "@/lib/openai";
+import { getOpenAIAsync, MODEL } from "@/infrastructure/openai";
 import { formatTranscript } from "./format";
-import { buildPersonaFromAxes } from "@/lib/personas";
-import type { Persona } from "@/lib/personas";
-import type { Message } from "@/lib/transcriptStore";
-import { weave } from "@/lib/weave";
+import { buildPersonaFromAxes } from "@/concepts/personas";
+import type { Persona } from "@/concepts/personas";
+import type { Message } from "../session";
+import { weave } from "@/infrastructure/weave";
 
 type HmtiClassification = {
   cleanliness: { pole: "N" | "C"; strength: number };

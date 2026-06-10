@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getSession, getAllTranscripts } from "@/lib/transcriptStore";
+import { getSession, getAllTranscripts } from "@/concepts/interview";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);

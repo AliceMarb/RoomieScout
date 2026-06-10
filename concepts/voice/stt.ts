@@ -1,6 +1,6 @@
 // Speech-to-text dispatcher. Handles the debug short-circuit, then routes to the
 // provider chosen by STT_PROVIDER (cloud ElevenLabs by default, local Whisper for dev).
-import { DEBUG_STT, STT_PROVIDER } from "@/lib/config";
+import { DEBUG_STT, STT_PROVIDER } from "@/infrastructure/config";
 import { elevenLabsSpeechToText } from "./elevenlabs";
 import { whisperSpeechToText } from "./whisper";
 import { deepgramSpeechToText } from "./deepgram";

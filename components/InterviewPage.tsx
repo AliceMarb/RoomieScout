@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { DEBUG_AGENTS } from "@/lib/config";
+import { DEBUG_AGENTS } from "@/infrastructure/config";
 import { Wordmark, cn } from "@/components/ui";
 
 type Message = { speaker: "ai" | "user"; text: string; domain?: string };

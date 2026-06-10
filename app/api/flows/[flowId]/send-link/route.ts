@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { getFlow } from "@/lib/store";
-import { sendResultsEmail } from "@/lib/email";
+import { getPairing } from "@/concepts/pairing";
+import { onSaveLink } from "@/concepts/syncs";
 
 // POST /api/flows/[flowId]/send-link — email someone their results link so they
 // can save it (the link is easy to lose). Used from the results page.
@@ -9,7 +9,7 @@ export async function POST(
   { params }: { params: Promise<{ flowId: string }> },
 ) {
   const { flowId } = await params;
-  if (!(await getFlow(flowId))) {
+  if (!(await getPairing(flowId))) {
     return NextResponse.json({ error: "Flow not found" }, { status: 404 });
   }
 
@@ -26,7 +26,7 @@ export async function POST(
   }
 
   try {
-    await sendResultsEmail({ to: email, flowId, kind: "saved" });
+    await onSaveLink(flowId, email);
   } catch (err) {
     console.error("[send-link] Failed to send:", err);
     return NextResponse.json({ error: "Could not send email" }, { status: 502 });

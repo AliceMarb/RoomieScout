@@ -1,4 +1,4 @@
-import type { Persona } from "@/lib/personas";
+import type { Persona } from "@/concepts/personas";
 
 export default function PersonaSpectrum({ persona }: { persona: Persona }) {
   return (

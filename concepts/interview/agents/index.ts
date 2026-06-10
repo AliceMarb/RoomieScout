@@ -1,5 +1,6 @@
 export { getNextQuestion, createInitialInterviewState } from "./orchestrator";
 export { classifyPersona } from "./classifier";
+export { formatTranscript } from "./format";
 export type {
   AgentDomain,
   AgentState,

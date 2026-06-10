@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getFlow, updateFlow } from "@/lib/store";
+import { getPairing, updatePairing } from "@/concepts/pairing";
 
 // POST /api/flows/[flowId]/name — store a participant's display name so results
 // show real names instead of "Person 1" / "Person 2".
@@ -9,7 +9,7 @@ export async function POST(
   { params }: { params: Promise<{ flowId: string }> },
 ) {
   const { flowId } = await params;
-  if (!(await getFlow(flowId))) {
+  if (!(await getPairing(flowId))) {
     return NextResponse.json({ error: "Flow not found" }, { status: 404 });
   }
 
@@ -26,7 +26,7 @@ export async function POST(
   }
 
   const role = body.role === "roommate" ? "roommate" : "initiator";
-  await updateFlow(flowId, role === "roommate" ? { roommateName: name } : { initiatorName: name });
+  await updatePairing(flowId, role === "roommate" ? { roommateName: name } : { initiatorName: name });
 
   return NextResponse.json({ ok: true });
 }

@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { initWeave, wrapOpenAIClient } from "@/lib/weave";
+import { initWeave, wrapOpenAIClient } from "@/infrastructure/weave";
 
 export const MODEL = "gpt-5.4-mini";
 

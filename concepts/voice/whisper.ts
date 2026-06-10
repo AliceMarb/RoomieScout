@@ -12,10 +12,10 @@ import { writeFile, unlink } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
-import { WHISPER_MODEL, WHISPER_PYTHON } from "@/lib/config";
+import { WHISPER_MODEL, WHISPER_PYTHON } from "@/infrastructure/config";
 import { extForMime } from "./mime";
 
-const SCRIPT = join(process.cwd(), "lib", "voice", "whisper_transcribe.py");
+const SCRIPT = join(process.cwd(), "concepts", "voice", "whisper_transcribe.py");
 
 export async function whisperSpeechToText(
   audioBuffer: Buffer,

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getFlow, getStatus } from "@/lib/store";
+import { getPairing, getPairingStatus } from "@/concepts/pairing";
 
 // GET /api/flows/[flowId] — current status and (once ready) the result.
 // Polled by the results page while processing.
@@ -8,18 +8,18 @@ export async function GET(
   { params }: { params: Promise<{ flowId: string }> },
 ) {
   const { flowId } = await params;
-  const flow = await getFlow(flowId);
-  if (!flow) {
+  const pairing = await getPairing(flowId);
+  if (!pairing) {
     return NextResponse.json({ error: "Flow not found" }, { status: 404 });
   }
 
-  const status = getStatus(flow);
+  const status = getPairingStatus(pairing);
   return NextResponse.json({
     status,
-    result: status === "completed" ? flow.result : undefined,
-    initiatorPersona: status === "completed" ? flow.initiatorPersona : undefined,
-    roommatePersona: status === "completed" ? flow.roommatePersona : undefined,
-    initiatorName: status === "completed" ? flow.initiatorName : undefined,
-    roommateName: status === "completed" ? flow.roommateName : undefined,
+    result: status === "completed" ? pairing.result : undefined,
+    initiatorPersona: status === "completed" ? pairing.initiatorPersona : undefined,
+    roommatePersona: status === "completed" ? pairing.roommatePersona : undefined,
+    initiatorName: status === "completed" ? pairing.initiatorName : undefined,
+    roommateName: status === "completed" ? pairing.roommateName : undefined,
   });
 }

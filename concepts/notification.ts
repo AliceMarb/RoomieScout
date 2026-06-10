@@ -3,9 +3,9 @@ import nodemailer from "nodemailer";
 // "ready"  — sent when a match completes and results are available.
 // "saved"  — sent when someone asks us to email them their results link so they
 //            don't lose it (the link is easy to misplace otherwise).
-type EmailKind = "ready" | "saved";
+type NotificationKind = "ready" | "saved";
 
-const COPY: Record<EmailKind, { subject: string; heading: string; body: string }> = {
+const COPY: Record<NotificationKind, { subject: string; heading: string; body: string }> = {
   ready: {
     subject: "Your roommate compatibility results are ready 🏠",
     heading: "Your results are in!",
@@ -18,14 +18,16 @@ const COPY: Record<EmailKind, { subject: string; heading: string; body: string }
   },
 };
 
-export async function sendResultsEmail({
+// Notification concept — alert a person by email with a link.
+// The caller is responsible for constructing the URL.
+export async function sendNotification({
   to,
-  flowId,
+  url,
   kind = "ready",
 }: {
   to: string;
-  flowId: string;
-  kind?: EmailKind;
+  url: string;
+  kind?: NotificationKind;
 }) {
   if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
     throw new Error("Email not configured — set EMAIL_USER and EMAIL_PASS in .env.local");
@@ -36,10 +38,9 @@ export async function sendResultsEmail({
     auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
   });
 
-  const resultsUrl = `${process.env.NEXT_PUBLIC_APP_URL}/results/${flowId}`;
   const { subject, heading, body } = COPY[kind];
 
-  console.log(`[email] Sending ${kind} email to ${to} for flow ${flowId}`);
+  console.log(`[notification] Sending ${kind} email to ${to}`);
   await transporter.sendMail({
     from: `"Homi" <${process.env.EMAIL_USER}>`,
     to,
@@ -48,7 +49,7 @@ export async function sendResultsEmail({
       <div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:32px 16px;color:#0f172a">
         <h1 style="font-size:22px;font-weight:600;margin-bottom:8px">${heading}</h1>
         <p style="color:#475569;margin-bottom:24px">${body}</p>
-        <a href="${resultsUrl}"
+        <a href="${url}"
            style="display:inline-block;background:#0f172a;color:#fff;text-decoration:none;
                   padding:12px 24px;border-radius:8px;font-weight:500;font-size:15px">
           View compatibility results →
@@ -59,5 +60,5 @@ export async function sendResultsEmail({
       </div>
     `,
   });
-  console.log(`[email] ✓ Sent to ${to}`);
+  console.log(`[notification] ✓ Sent to ${to}`);
 }

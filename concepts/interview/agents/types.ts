@@ -34,4 +34,3 @@ export type InterviewState = {
   currentAgentDomain: AgentDomain | null;
   isComplete: boolean;
 };
-

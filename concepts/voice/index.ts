@@ -1,5 +1,5 @@
 // Public voice API. Import voice features from here, not the provider files:
-//   import { textToSpeech, speechToText } from "@/lib/voice";
+//   import { textToSpeech, speechToText } from "@/concepts/voice";
 //
 // Each dispatches by provider/debug flags (see ./tts and ./stt):
 // - textToSpeech: Kokoro (local dev) or ElevenLabs (cloud) per TTS_PROVIDER

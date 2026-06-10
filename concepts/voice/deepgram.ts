@@ -5,7 +5,7 @@
 // Deepgram's prerecorded endpoint takes the raw audio bytes as the request body
 // (not multipart) with the mime type in Content-Type, so there's no SDK needed —
 // just a fetch, matching the elevenlabs.ts style.
-import { DEEPGRAM_MODEL } from "@/lib/config";
+import { DEEPGRAM_MODEL } from "@/infrastructure/config";
 
 const DEEPGRAM_API_KEY = process.env.DEEPGRAM_API_KEY;
 

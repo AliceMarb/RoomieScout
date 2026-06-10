@@ -3,7 +3,7 @@
  * types: the catalogue (copy + visuals), persona construction, compatibility
  * scoring, avatar image paths, and image generation.
  *
- * Import from `@/lib/personas` everywhere. See `data.ts` for the catalogue and
+ * Import from `@/concepts/personas` everywhere. See `data.ts` for the catalogue and
  * `README.md` for the full list of types and where the image assets live.
  */
 
@@ -14,6 +14,7 @@ export type {
   PersonaMeta,
   HmtiAvatarMeta,
   CompatibilityResult,
+  DealbreakersRow,
   AvatarPromptStyle,
 } from "./types";
 
@@ -38,4 +39,4 @@ export { buildAvatarImagePrompt } from "./image-prompt";
 
 // NOTE: server-only avatar *generation* (OpenAI image calls) is intentionally
 // NOT re-exported here — importing it would pull `openai`/`weave` into client
-// bundles. Import it directly from "@/lib/personas/generate" in server code.
+// bundles. Import it directly from "@/concepts/personas/generate" in server code.

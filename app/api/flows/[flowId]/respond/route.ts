@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
-import { computeCompatibility, computePersona } from "@/lib/personas";
-import type { Persona } from "@/lib/personas";
-import { getFlow, updateFlow } from "@/lib/store";
-import { sendResultsEmail } from "@/lib/email";
-import { generateCompatibilitySummary } from "@/lib/compatibilitySummary";
+import { computeCompatibility, computePersona } from "@/concepts/personas";
+import type { Persona } from "@/concepts/personas";
+import { getPairing, updatePairing, generateCompatibilitySummary } from "@/concepts/pairing";
+import { sendNotification } from "@/concepts/notification";
 
 const PROCESSING_DELAY_MS = 2500;
 
@@ -12,8 +11,8 @@ export async function POST(
   { params }: { params: Promise<{ flowId: string }> },
 ) {
   const { flowId } = await params;
-  const flow = await getFlow(flowId);
-  if (!flow) {
+  const pairing = await getPairing(flowId);
+  if (!pairing) {
     return NextResponse.json({ error: "Flow not found" }, { status: 404 });
   }
 
@@ -30,9 +29,9 @@ export async function POST(
   }
 
   const roommateText = typeof body.text === "string" ? body.text.trim() : "";
-  const result = computeCompatibility(flow.initiatorPersona, roommatePersona);
+  const result = computeCompatibility(pairing.initiatorPersona, roommatePersona);
 
-  await updateFlow(flowId, {
+  await updatePairing(flowId, {
     roommateInput: roommateText,
     roommatePersona,
     result,
@@ -41,21 +40,22 @@ export async function POST(
 
   // Generate AI summary + dealbreakers in background — updates result once ready
   generateCompatibilitySummary(
-    flow.initiatorInput,
+    pairing.initiatorInput,
     roommateText,
     result.score,
-    flow.initiatorName || "Person 1",
-    flow.roommateName || "Person 2",
+    pairing.initiatorName || "Person 1",
+    pairing.roommateName || "Person 2",
   )
     .then(({ aiSummary, dealbreakers }) =>
-      updateFlow(flowId, { result: { ...result, aiSummary, dealbreakers } }).catch(() => {})
+      updatePairing(flowId, { result: { ...result, aiSummary, dealbreakers } }).catch(() => {})
     )
     .catch((err) => console.error("[summary] Failed:", err));
 
-  const emailStatus = flow.initiatorEmail ? `sending to ${flow.initiatorEmail}` : "no email saved";
-  if (flow.initiatorEmail) {
-    sendResultsEmail({ to: flow.initiatorEmail, flowId }).catch((err) =>
-      console.error("[email] Failed to send results email:", err),
+  const emailStatus = pairing.initiatorEmail ? `sending to ${pairing.initiatorEmail}` : "no email saved";
+  if (pairing.initiatorEmail) {
+    const base = process.env.NEXT_PUBLIC_APP_URL ?? "";
+    sendNotification({ to: pairing.initiatorEmail, url: `${base}/results/${flowId}` }).catch((err) =>
+      console.error("[notification] Failed to send results email:", err),
     );
   }
 

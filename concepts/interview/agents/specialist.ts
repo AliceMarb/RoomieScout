@@ -1,9 +1,9 @@
-import { getOpenAIAsync, MODEL } from "@/lib/openai";
+import { getOpenAIAsync, MODEL } from "@/infrastructure/openai";
 import { getSpecialistPrompt } from "./prompts";
 import { formatTranscript } from "./format";
 import type { AgentDomain, AgentState, SpecialistResponse } from "./types";
-import type { Message } from "@/lib/transcriptStore";
-import { weave } from "@/lib/weave";
+import type { Message } from "../session";
+import { weave } from "@/infrastructure/weave";
 
 export const getSpecialistQuestion = weave.op(async function getSpecialistQuestion(
   domain: AgentDomain,

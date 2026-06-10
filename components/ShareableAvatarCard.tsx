@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { Persona } from "@/lib/personas";
-import { getAvatarPublicPath, getPersonaMeta } from "@/lib/personas";
+import type { Persona } from "@/concepts/personas";
+import { getAvatarPublicPath, getPersonaMeta } from "@/concepts/personas";
 import MascotIllustration from "@/components/MascotIllustration";
 
 type ShareableAvatarCardProps = {

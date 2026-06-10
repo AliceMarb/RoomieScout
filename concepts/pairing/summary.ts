@@ -1,11 +1,7 @@
-import { getOpenAIAsync, MODEL } from "@/lib/openai";
+import { getOpenAIAsync, MODEL } from "@/infrastructure/openai";
+import type { DealbreakersRow } from "@/concepts/personas";
 
-export type DealbreakersRow = {
-  topic: string;       // e.g. "Smoking", "Pets", "Guest frequency"
-  personA: string;     // e.g. "Non-smoker", "Has a dog"
-  personB: string;
-  compatible: boolean; // true = aligned, false = conflict
-};
+export type { DealbreakersRow };
 
 export type CompatibilitySummaryResult = {
   aiSummary: string;

@@ -1,6 +1,6 @@
 import FlowNotFound from "@/components/FlowNotFound";
 import JoinIntro from "@/components/JoinIntro";
-import { getFlow } from "@/lib/store";
+import { getPairing } from "@/concepts/pairing";
 
 export default async function JoinPage({
   params,
@@ -8,7 +8,7 @@ export default async function JoinPage({
   params: Promise<{ flowId: string }>;
 }) {
   const { flowId } = await params;
-  const flow = await getFlow(flowId);
+  const flow = await getPairing(flowId);
 
   if (!flow) {
     return (

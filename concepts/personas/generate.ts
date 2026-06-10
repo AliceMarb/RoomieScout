@@ -3,7 +3,7 @@
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import type OpenAI from "openai";
-import { getOpenAIAsync } from "@/lib/openai";
+import { getOpenAIAsync } from "@/infrastructure/openai";
 import { buildAvatarImagePrompt } from "./image-prompt";
 import { isValidHmtiCode } from "./persona";
 import type { AvatarPromptStyle } from "./types";

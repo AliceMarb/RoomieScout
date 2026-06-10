@@ -1,11 +1,11 @@
-import { getOpenAIAsync, MODEL } from "@/lib/openai";
+import { getOpenAIAsync, MODEL } from "@/infrastructure/openai";
 import { ORCHESTRATOR_PROMPT } from "./prompts";
 import { getSpecialistQuestion } from "./specialist";
 import { formatTranscript } from "./format";
 import type { AgentDomain, InterviewState, OrchestratorDecision } from "./types";
 import { ALL_DOMAINS as DOMAINS } from "./types";
-import type { Message } from "@/lib/transcriptStore";
-import { weave } from "@/lib/weave";
+import type { Message } from "../session";
+import { weave } from "@/infrastructure/weave";
 
 const MAX_TURNS = 7;
 const MAX_QUESTIONS_PER_AGENT = 3;

@@ -3,7 +3,7 @@
 // prod), and in dev degrades to silent (returns null) if synthesis fails — so a
 // missing model or dead ElevenLabs quota shows Scout's line as text instead of
 // 500ing the interview.
-import { DEBUG_TTS, TTS_PROVIDER } from "@/lib/config";
+import { DEBUG_TTS, TTS_PROVIDER } from "@/infrastructure/config";
 import { elevenLabsTextToSpeech } from "./elevenlabs";
 import { kokoroTextToSpeech } from "./kokoro";
 

@@ -1,6 +1,11 @@
 /** Shared persona / avatar types. */
 
-import type { DealbreakersRow } from "@/lib/compatibilitySummary";
+export type DealbreakersRow = {
+  topic: string;
+  personA: string;
+  personB: string;
+  compatible: boolean;
+};
 
 /** Prompt tone for avatar image generation. */
 export type AvatarPromptStyle = "classic" | "cool";

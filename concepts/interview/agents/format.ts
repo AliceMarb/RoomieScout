@@ -1,4 +1,4 @@
-import type { Message } from "@/lib/transcriptStore";
+import type { Message } from "../session";
 
 const DOMAIN_LABELS: Record<string, string> = {
   communication: "communication",

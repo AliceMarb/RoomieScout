@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import { useEffect, useState, type FormEvent } from "react";
-import type { CompatibilityResult, Persona } from "@/lib/personas";
-import { getAvatarPublicPath } from "@/lib/personas";
+import type { CompatibilityResult, Persona } from "@/concepts/personas";
+import { getAvatarPublicPath } from "@/concepts/personas";
 import { Button, Card, Input, RuleLabel } from "@/components/ui";
 
 function SaveResultCard({ flowId }: { flowId: string }) {

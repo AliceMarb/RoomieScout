@@ -6,7 +6,7 @@ export type Message = {
   domain?: string;
 };
 
-import type { InterviewState } from "@/lib/agents";
+import type { InterviewState } from "./agents/types";
 
 export type Session = {
   transcript: Message[];
@@ -15,7 +15,6 @@ export type Session = {
   flowId?: string;
 };
 
-// Attach to globalThis so Next.js hot-module-reload doesn't wipe the Map between requests
 declare global { var _homiSessions: Map<string, Session> | undefined; }
 if (!globalThis._homiSessions) globalThis._homiSessions = new Map();
 const sessions = globalThis._homiSessions;

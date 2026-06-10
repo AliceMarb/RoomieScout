@@ -21,9 +21,9 @@ import {
   KOKORO_VOICES,
   KOKORO_VOICE,
   KOKORO_SPEED,
-} from "@/lib/config";
+} from "@/infrastructure/config";
 
-const SCRIPT = join(process.cwd(), "lib", "voice", "kokoro_tts.py");
+const SCRIPT = join(process.cwd(), "concepts", "voice", "kokoro_tts.py");
 
 // Model paths may be relative (default) or absolute (env override).
 function resolvePath(p: string): string {
