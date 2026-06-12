@@ -23,39 +23,16 @@ export default function JoinIntro({
   initiatorEmail?: string;
 }) {
   const [open, setOpen] = useState(true);
-  const [name, setName] = useState("");
-  const [saving, setSaving] = useState(false);
   const senderName = firstName(initiatorEmail);
   const avatarSrc = getAvatarPublicPath(initiatorPersona.code);
 
-  async function handleStart() {
-    if (!name.trim()) return;
-    setSaving(true);
-    try {
-      await fetch(`/api/flows/${flowId}/name`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), role: "roommate" }),
-      });
-    } catch {
-      // Non-blocking: proceed to the interview even if saving the name fails.
-    } finally {
-      setSaving(false);
-      setOpen(false);
-    }
-  }
-
   return (
     <>
-      {/* Page content always rendered underneath */}
       <JoinForm flowId={flowId} />
 
-      {/* Modal overlay */}
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 backdrop-blur-sm">
           <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-2xl text-center">
-
-            {/* Sender avatar + badge */}
             <div className="flex flex-col items-center gap-2">
               <Image
                 src={avatarSrc}
@@ -71,21 +48,18 @@ export default function JoinIntro({
               </div>
             </div>
 
-            {/* Headline */}
             <h1 className="mt-5 text-2xl font-bold tracking-tight text-slate-900">
               Are you two roommate material?
             </h1>
 
-            {/* Description */}
             <p className="mt-3 text-sm leading-relaxed text-slate-500">
-              Answer a few questions about how you like to live. Takes about a minute —
-              you&apos;ll both see a compatibility score and breakdown when you&apos;re done.
+              12 quick tap-to-answer questions about how you like to live.
+              Takes about 2 minutes — you&apos;ll both see your Housemate Types and a compatibility score.
             </p>
 
-            {/* What to expect */}
             <div className="mt-5 space-y-2 text-left">
               {[
-                ["🎙", "Speak or type your answers"],
+                ["✦", "Tap to answer — no typing required"],
                 ["🔒", "Only shared with your potential roommate"],
                 ["📊", "You both see the results"],
               ].map(([icon, text]) => (
@@ -96,22 +70,11 @@ export default function JoinIntro({
               ))}
             </div>
 
-            {/* Name */}
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Your name"
-              className="mt-6 w-full rounded-xl border border-slate-200 px-4 py-3 text-base text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none"
-            />
-
-            {/* CTA */}
             <button
-              onClick={handleStart}
-              disabled={!name.trim() || saving}
-              className="mt-3 w-full rounded-xl bg-slate-900 px-6 py-3.5 text-base font-semibold text-white shadow-sm transition-colors hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+              onClick={() => setOpen(false)}
+              className="mt-6 w-full rounded-xl bg-slate-900 px-6 py-3.5 text-base font-semibold text-white shadow-sm transition-colors hover:bg-slate-700"
             >
-              {saving ? "Starting…" : "Get started →"}
+              Take the quiz →
             </button>
 
             <p className="mt-2.5 text-xs text-slate-400">No account needed</p>

@@ -73,6 +73,24 @@ export type Persona = {
   axes: PersonaAxis[]; // exactly 4 spectrum axes
 };
 
+/** A situational friction flag produced by the paid practical layer. */
+export type PracticalFlag = {
+  id: string;
+  severity: "high" | "medium" | "low";
+  title: string;
+  detail: string;
+  talkAbout: string;
+};
+
+/** One axis's personality-interaction analysis: dynamic + actionable advice. */
+export type PersonalityInteraction = {
+  axisName: string;
+  traitA: string;
+  traitB: string;
+  dynamic: string;
+  advice: string[];
+};
+
 /** Result of comparing two personas. */
 export type CompatibilityResult = {
   score: number; // 0-100 overall compatibility
@@ -80,4 +98,8 @@ export type CompatibilityResult = {
   summary: string;
   aiSummary?: string;
   dealbreakers?: DealbreakersRow[];
+  // Paid layer — present only when both participants completed the practical form
+  practicalFlags?: PracticalFlag[];
+  personalityInteractions?: PersonalityInteraction[];
+  conversationList?: string[];
 };

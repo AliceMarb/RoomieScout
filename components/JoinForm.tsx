@@ -1,7 +1,7 @@
 "use client";
 
-import InterviewPage from "@/components/InterviewPage";
+import PersonalityQuiz from "@/components/PersonalityQuiz";
 
 export default function JoinForm({ flowId }: { flowId: string }) {
-  return <InterviewPage flowId={flowId} />;
+  return <PersonalityQuiz flowId={flowId} />;
 }
