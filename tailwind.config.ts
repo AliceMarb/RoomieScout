@@ -46,7 +46,7 @@ const config: Config = {
         eyebrow: "0.18em",
       },
       maxWidth: {
-        page: "44rem",
+        page: "52rem",
       },
     },
   },

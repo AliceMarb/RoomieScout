@@ -14,6 +14,8 @@ export type {
   PersonaMeta,
   HmtiAvatarMeta,
   CompatibilityResult,
+  PracticalFlag,
+  PersonalityInteraction,
   DealbreakersRow,
   AvatarPromptStyle,
 } from "./types";

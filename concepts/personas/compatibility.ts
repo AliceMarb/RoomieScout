@@ -4,8 +4,12 @@ import { AXIS_WEIGHTS } from "./data";
 import type { CompatibilityResult, Persona } from "./types";
 
 /**
- * Compute HMTI compatibility between two personas.
- * Same axis pole = full weight. Different = 0.
+ * Compute HMTI v2 compatibility between two personas.
+ *
+ * Same pole: full axis weight.
+ * Different poles: partial credit — a barely-leaning pair scores near-full;
+ * strongly-opposite pairs score 0.
+ * Formula: weight × max(0, 1 − (sA + sB) / 2)  where s = (strength−55) / 40
  */
 export function computeCompatibility(
   personaA: Persona,
@@ -13,11 +17,16 @@ export function computeCompatibility(
 ): CompatibilityResult {
   const categories = personaA.axes.map((axisA, i) => {
     const axisB = personaB.axes[i];
-    const match = axisA.chosen === axisB.chosen;
-    return {
-      name: axisA.name,
-      score: match ? AXIS_WEIGHTS[i] : 0,
-    };
+    const weight = AXIS_WEIGHTS[i];
+    let axisScore: number;
+    if (axisA.chosen === axisB.chosen) {
+      axisScore = weight;
+    } else {
+      const sA = (axisA.strength - 55) / 40;
+      const sB = (axisB.strength - 55) / 40;
+      axisScore = Math.round(weight * Math.max(0, 1 - (sA + sB) / 2));
+    }
+    return { name: axisA.name, score: axisScore };
   });
 
   const score = categories.reduce((sum, c) => sum + c.score, 0);
