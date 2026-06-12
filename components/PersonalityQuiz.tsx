@@ -2,19 +2,23 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { PageShell, Wordmark, Button, cn } from "@/components/ui";
+import { PageShell, Wordmark, Button, Card, cn } from "@/components/ui";
 import { QUIZ_QUESTIONS, type QuizAnswers } from "@/concepts/interview/quiz";
+import type { Persona } from "@/concepts/personas";
+import ShareableAvatarCard from "@/components/ShareableAvatarCard";
+import SharePanel from "@/components/SharePanel";
 
 const AXIS_LABELS = ["Cleanliness", "Social intensity", "Conflict style", "Structure preference"];
 
 export default function PersonalityQuiz({ flowId }: { flowId?: string }) {
   const router = useRouter();
-  const [step, setStep] = useState<"intro" | "quiz" | "submitting">(
+  const [step, setStep] = useState<"intro" | "quiz" | "submitting" | "done">(
     flowId ? "quiz" : "intro",
   );
   const [currentQ, setCurrentQ] = useState(0);
   const [answers, setAnswers] = useState<QuizAnswers>({});
   const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<{ persona: Persona; flowId: string } | null>(null);
 
   const total = QUIZ_QUESTIONS.length;
   const question = QUIZ_QUESTIONS[currentQ];
@@ -40,8 +44,17 @@ export default function PersonalityQuiz({ flowId }: { flowId?: string }) {
         body: JSON.stringify({ answers: finalAnswers, flowId }),
       });
       if (!res.ok) throw new Error(await res.text());
-      const { redirectTo } = await res.json();
-      router.push(redirectTo);
+      const data = await res.json() as { redirectTo: string; persona: Persona; flowId: string };
+
+      // Joiner path → go straight to results
+      if (flowId) {
+        router.push(data.redirectTo);
+        return;
+      }
+
+      // Initiator path → show result inline
+      setResult({ persona: data.persona, flowId: data.flowId });
+      setStep("done");
     } catch (err) {
       setError((err as Error).message || "Something went wrong. Please try again.");
       setStep("quiz");
@@ -83,6 +96,26 @@ export default function PersonalityQuiz({ flowId }: { flowId?: string }) {
         <div className="mt-20 flex flex-col items-center text-center">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-line border-t-accent" />
           <p className="mt-4 text-sm text-ink-soft">Working out your Housemate Type…</p>
+        </div>
+      </PageShell>
+    );
+  }
+
+  if (step === "done" && result) {
+    return (
+      <PageShell>
+        <Wordmark />
+        <header className="mt-8">
+          <span className="eyebrow">Your result</span>
+          <h1 className="mt-2 font-display text-3xl font-bold tracking-tight text-ink">
+            Meet your Housemate Type
+          </h1>
+        </header>
+        <div className="mt-8 space-y-6">
+          <ShareableAvatarCard persona={result.persona} />
+          <Card className="p-6">
+            <SharePanel flowId={result.flowId} />
+          </Card>
         </div>
       </PageShell>
     );
