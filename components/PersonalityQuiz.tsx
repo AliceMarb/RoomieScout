@@ -10,10 +10,10 @@ import SharePanel from "@/components/SharePanel";
 
 const AXIS_LABELS = ["Cleanliness", "Social intensity", "Conflict style", "Structure preference"];
 
-export default function PersonalityQuiz({ flowId }: { flowId?: string }) {
+export default function PersonalityQuiz({ flowId, skipIntro }: { flowId?: string; skipIntro?: boolean }) {
   const router = useRouter();
   const [step, setStep] = useState<"intro" | "quiz" | "submitting" | "done">(
-    flowId ? "quiz" : "intro",
+    flowId || skipIntro ? "quiz" : "intro",
   );
   const [currentQ, setCurrentQ] = useState(0);
   const [answers, setAnswers] = useState<QuizAnswers>({});
