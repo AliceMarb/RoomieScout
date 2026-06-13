@@ -73,13 +73,13 @@ function updatedBlockDraft(draft: BlockDraft, optId: string): BlockDraft {
   if (optId === draft.most) return { most: null, least: null };
   if (optId === draft.least) return { ...draft, least: null };
   if (!draft.most) return { most: optId, least: null };
-  return { ...draft, least: optId }; // replace least if already set
+  return { ...draft, least: optId };
 }
 
 // ── group completeness ────────────────────────────────────────────────────────
 
 function isGroupComplete(group: QuizGroup, answers: Answers): boolean {
-  if (group.kind === "axis") return true; // axis answers are optional
+  if (group.kind === "axis") return true;
   return group.questions.every((q) => {
     const a = answers[q.id];
     if (!a) return false;

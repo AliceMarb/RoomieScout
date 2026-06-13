@@ -1,57 +1,23 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Button, Input, RuleLabel, cn } from "@/components/ui";
+import { Button, Input, RuleLabel } from "@/components/ui";
 
 const emailValid = (v: string) => /\S+@\S+\.\S+/.test(v.trim());
 
-type Mode = "share" | "match";
-
 export default function SharePanel({ flowId }: { flowId: string }) {
-  const router = useRouter();
   const [joinUrl, setJoinUrl] = useState("");
   const [copied, setCopied] = useState(false);
-  const [mode, setMode] = useState<Mode>("share");
-
-  // Your details — required, shared by both actions.
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-
-  const [savingLink, setSavingLink] = useState(false);
-  const [linkError, setLinkError] = useState<string | null>(null);
-
-  const [theirEmail, setTheirEmail] = useState("");
-  const [pairing, setPairing] = useState(false);
-  const [waiting, setWaiting] = useState(false);
-  const [pairError, setPairError] = useState<string | null>(null);
-
-  const detailsValid = name.trim().length > 0 && emailValid(email);
+  const [savingEmail, setSavingEmail] = useState(false);
+  const [emailSaved, setEmailSaved] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
 
   useEffect(() => {
     setJoinUrl(`${window.location.origin}/join/${flowId}`);
   }, [flowId]);
 
-  // Persist name + email so we can email this person their result later.
-  async function saveDetails(): Promise<boolean> {
-    const [emailRes, nameRes] = await Promise.all([
-      fetch(`/api/flows/${flowId}/email`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      }),
-      fetch(`/api/flows/${flowId}/name`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, role: "initiator" }),
-      }),
-    ]);
-    return emailRes.ok && nameRes.ok;
-  }
-
   function writeClipboard(text: string): boolean {
-    // Copy synchronously, within the click gesture — awaiting first would expire
-    // the user activation and make the Clipboard API reject (notably on Safari).
     try {
       const ta = document.createElement("textarea");
       ta.value = text;
@@ -62,188 +28,91 @@ export default function SharePanel({ flowId }: { flowId: string }) {
       const ok = document.execCommand("copy");
       document.body.removeChild(ta);
       if (ok) return true;
-    } catch {
-      /* fall through to async API */
-    }
+    } catch { /* fall through */ }
     navigator.clipboard?.writeText(text).catch(() => {});
     return Boolean(navigator.clipboard);
   }
 
-  async function copyLink() {
-    if (!detailsValid) return;
-    setLinkError(null);
-
-    // 1. Copy right away so the gesture isn't lost.
+  function copyLink() {
     if (writeClipboard(joinUrl)) {
       setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    } else {
-      setLinkError("Couldn't copy — select the link and copy it manually.");
-    }
-
-    // 2. Persist the email so they actually receive their result.
-    setSavingLink(true);
-    try {
-      if (!(await saveDetails())) {
-        setLinkError("Couldn't save your email. Please try again.");
-      }
-    } catch {
-      setLinkError("Couldn't save your email. Please try again.");
-    } finally {
-      setSavingLink(false);
+      setTimeout(() => setCopied(false), 2000);
     }
   }
 
-  async function handlePair(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setPairError(null);
-    setPairing(true);
+  async function saveEmail() {
+    if (!emailValid(email)) return;
+    setEmailError(null);
+    setSavingEmail(true);
     try {
-      const res = await fetch("/api/flows/pair", {
+      const res = await fetch(`/api/flows/${flowId}/send-link`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ flowId, name, email, roommateEmail: theirEmail }),
+        body: JSON.stringify({ email }),
       });
-      const data = (await res.json().catch(() => ({}))) as {
-        status?: string;
-        error?: string;
-      };
       if (!res.ok) {
-        setPairError(data.error || "Request failed");
+        const d = (await res.json().catch(() => ({}))) as { error?: string };
+        setEmailError(d.error || "Couldn't send — try again.");
         return;
       }
-      if (data.status === "matched") {
-        router.push(`/results/${flowId}`);
-        return;
-      }
-      setWaiting(true);
+      setEmailSaved(true);
     } catch {
-      setPairError("Network error. Please try again.");
+      setEmailError("Network error. Try again.");
     } finally {
-      setPairing(false);
+      setSavingEmail(false);
     }
-  }
-
-  const copyTile =
-    "flex shrink-0 items-center justify-center gap-2 rounded-md border border-line bg-surface px-3 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-ink/[0.04] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-surface";
-
-  function tabClass(active: boolean) {
-    return cn(
-      "flex items-center justify-center gap-2 rounded-md border px-3 py-2.5 text-sm font-medium transition-colors",
-      active
-        ? "border-accent bg-accent-soft text-ink"
-        : "border-line bg-surface text-ink-soft hover:bg-ink/[0.04]",
-    );
-  }
-
-  if (waiting) {
-    return (
-      <div className="rounded-md border border-line bg-surface p-5">
-        <p className="text-sm font-medium text-ink">You&apos;re all set ✓</p>
-        <p className="mt-1 text-sm text-ink-soft">
-          The moment {theirEmail} finishes their test, we&apos;ll email you both the
-          result.
-        </p>
-      </div>
-    );
   }
 
   return (
-    <div className="space-y-5">
-      {/* ── Your details (required — also how we send your result) ── */}
+    <div className="space-y-6">
       <div>
-        <RuleLabel>Your details</RuleLabel>
+        <RuleLabel>Share with a potential roommate</RuleLabel>
         <p className="mt-3 text-sm text-ink-soft">
-          Where should we send your compatibility result?
+          Send them this link — they'll take the quiz and you'll both see a compatibility score.
         </p>
-        <div className="mt-4 space-y-2">
-          <Input
-            type="text"
-            required
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Your name"
-          />
-          <Input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
-          />
+        <div className="mt-4 flex gap-2">
+          <Input readOnly value={joinUrl} className="min-w-0 flex-1 bg-paper text-ink-soft select-all" />
+          <Button variant={copied ? "outline" : "accent"} onClick={copyLink} className="shrink-0 px-5">
+            {copied ? "Copied ✓" : "Copy link"}
+          </Button>
         </div>
       </div>
 
-      {/* ── Pick how to match ────────────────────────────────────── */}
-      <div className="border-t border-line pt-5">
-        <div className="grid grid-cols-2 gap-2">
-          <button type="button" onClick={() => setMode("share")} className={tabClass(mode === "share")}>
-            <span aria-hidden>🔗</span> Share a link
-          </button>
-          <button type="button" onClick={() => setMode("match")} className={tabClass(mode === "match")}>
-            <span aria-hidden>🤝</span> Match by email
-          </button>
+      {copied && !emailSaved && (
+        <div>
+          <RuleLabel>Save your results link</RuleLabel>
+          <p className="mt-3 text-sm text-ink-soft">Email yourself this link so you can find your results later.</p>
+          <div className="mt-4 flex gap-2">
+            <Input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && saveEmail()}
+              placeholder="you@example.com"
+              className="min-w-0 flex-1"
+            />
+            <Button variant="solid" disabled={savingEmail || !emailValid(email)} onClick={saveEmail} className="shrink-0">
+              {savingEmail ? "Sending…" : "Email me"}
+            </Button>
+          </div>
+          {emailError && <p className="mt-2 text-sm text-accent-ink">{emailError}</p>}
         </div>
+      )}
 
-        {!detailsValid ? (
-          <p className="mt-3 text-xs text-ink-faint">
-            Add your name and email above to continue.
-          </p>
-        ) : null}
+      {emailSaved && <p className="text-sm text-ink-soft">Sent ✓ — check your inbox for the link.</p>}
 
-        {mode === "share" ? (
-          <div className="mt-4">
-            <p className="text-sm text-ink-soft">
-              Send a potential roommate this link. We&apos;ll email you the result
-              when they finish.
-            </p>
-            <div className="mt-3 flex gap-2">
-              <Input readOnly value={joinUrl} className="min-w-0 flex-1 bg-paper text-ink-soft" />
-              <button
-                type="button"
-                onClick={copyLink}
-                disabled={!detailsValid || savingLink}
-                className={copyTile}
-              >
-                {savingLink ? "…" : copied ? "✓ Copied" : "🔗 Copy"}
-              </button>
-            </div>
-            {linkError ? (
-              <p className="mt-2 text-sm text-accent-ink" role="alert">
-                {linkError}
-              </p>
-            ) : null}
-          </div>
-        ) : (
-          <div className="mt-4">
-            <p className="text-sm text-ink-soft">
-              Roommate taking the test on their own? Add their email — we&apos;ll
-              pair you and email you both when you&apos;re done. No link needed.
-            </p>
-            <form onSubmit={handlePair} className="mt-3 flex gap-2">
-              <Input
-                type="email"
-                required
-                value={theirEmail}
-                onChange={(e) => setTheirEmail(e.target.value)}
-                placeholder="Roommate's email"
-              />
-              <Button
-                type="submit"
-                variant="accent"
-                disabled={pairing || !detailsValid || !theirEmail}
-                className="shrink-0"
-              >
-                {pairing ? "Matching…" : "Match us"}
-              </Button>
-            </form>
-            {pairError ? (
-              <p className="mt-2 text-sm text-accent-ink" role="alert">
-                {pairError}
-              </p>
-            ) : null}
-          </div>
-        )}
+      <div className="rounded-xl border border-line bg-surface p-5">
+        <p className="eyebrow text-accent">Practical report</p>
+        <p className="mt-2 text-sm font-medium text-ink">Liking each other isn't the same as being able to live together.</p>
+        <p className="mt-1 text-sm text-ink-soft">
+          The practical assessment flags the real friction points before you sign a lease.
+        </p>
+        <a
+          href={"/paid/" + flowId}
+          className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-ink px-4 py-2.5 text-sm font-medium text-paper transition-colors hover:bg-ink/90"
+        >
+          Take the practical assessment →
+        </a>
       </div>
     </div>
   );

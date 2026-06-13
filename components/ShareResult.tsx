@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
 import type { Persona } from "@/concepts/personas";
 import { getPersonaMeta } from "@/concepts/personas";
@@ -101,6 +102,13 @@ export default function ShareResult({
         <Button variant="solid" onClick={() => setStage("match")} className="w-full">
           Compare with someone →
         </Button>
+
+        <Link
+          href={`/results/${flowId}`}
+          className="block w-full text-center text-sm text-ink-soft underline-offset-2 hover:text-ink hover:underline"
+        >
+          Go to results page
+        </Link>
       </div>
     );
   }

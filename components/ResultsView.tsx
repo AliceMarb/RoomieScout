@@ -2,9 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import type { CompatibilityResult, Persona } from "@/concepts/personas";
 import { getAvatarPublicPath } from "@/concepts/personas";
+import { getPersonaMetaV2 } from "@/concepts/personas/meta-v2";
 import { Button, Card, Input, RuleLabel, cn } from "@/components/ui";
 
 function SaveResultCard({ flowId }: { flowId: string }) {
@@ -82,40 +83,44 @@ type FlowState = {
 
 function PersonaCard({ persona, label }: { persona: Persona; label: string }) {
   const avatarSrc = getAvatarPublicPath(persona.code);
-  // Spell out the code: each letter is the chosen side of one axis, e.g.
-  // COSL → "Casual · Open · Stable · Laid-back". This makes the type code
-  // legible at a glance instead of an unexplained acronym.
-  const traits = persona.axes.map((axis) =>
-    axis.chosen === "left" ? axis.left : axis.right,
-  );
+  const meta = getPersonaMetaV2(persona.code);
+  const traits = persona.axes.map((axis) => axis.chosen === "left" ? axis.left : axis.right);
   return (
-    <div className="flex-1 rounded-xl border border-line bg-surface p-4">
+    <div className="flex-1 rounded-xl border border-line bg-surface p-4 space-y-3">
       <p className="eyebrow">{label}</p>
-      <div className="mt-2 flex items-center gap-3">
+      <div className="flex items-center gap-3">
         <Image
           src={avatarSrc}
           alt={persona.title}
-          width={52}
-          height={52}
-          className="rounded-full object-cover"
+          width={48}
+          height={48}
+          className="rounded-full object-cover shrink-0"
           onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
         />
-        <div>
-          <p className="font-display text-lg font-bold leading-tight text-ink">{persona.title}</p>
+        <div className="min-w-0">
+          <p className="font-display text-base font-bold leading-tight text-ink">{persona.title}</p>
           <p className="mt-0.5 font-display text-xs font-semibold tracking-widest text-accent tnum">{persona.code}</p>
         </div>
       </div>
-      <div className="mt-3 flex flex-wrap gap-1.5">
-        {traits.map((trait) => (
-          <span
-            key={trait}
-            className="rounded-full border border-line bg-paper px-2 py-0.5 text-[10px] font-medium text-ink-soft"
-          >
-            {trait}
-          </span>
-        ))}
-      </div>
-      <p className="mt-2 text-xs leading-relaxed text-ink-soft">{persona.description}</p>
+      <p className="text-[11px] text-ink-faint">{traits.join(" · ")}</p>
+      {meta && <p className="text-xs italic leading-relaxed text-ink-soft">{meta.miniBio}</p>}
+      <p className="text-xs leading-relaxed text-ink">{persona.description}</p>
+      {meta && (
+        <div className="space-y-2 pt-1 border-t border-line">
+          <div><p className="eyebrow mb-0.5">Roommate superpower</p><p className="text-xs text-ink-soft">{meta.roommateSuperpower}</p></div>
+          <div><p className="eyebrow mb-0.5">Growth edge</p><p className="text-xs text-ink-soft">{meta.growthEdge}</p></div>
+          <div><p className="eyebrow mb-0.5">What you need</p><p className="text-xs text-ink-soft">{meta.whatYouNeed}</p></div>
+          <div><p className="eyebrow mb-0.5">Danger zone</p><p className="text-xs text-ink-soft">{meta.dangerZone}</p></div>
+          <div>
+            <p className="eyebrow mb-1">Connects best with</p>
+            <div className="flex flex-wrap gap-1">
+              {meta.bestMatches.map((code) => (
+                <span key={code} className="rounded-full border border-line bg-paper px-2 py-0.5 font-display text-[10px] font-semibold text-ink tnum">{code}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -209,7 +214,7 @@ export default function ResultsView({ flowId }: { flowId: string }) {
     );
   }
 
-  const { score, summary, aiSummary, dealbreakers } = state.result;
+  const { score, summary, aiSummary, dealbreakers, practicalFlags, personalityInteractions, conversationList } = state.result;
   const nameA = state.initiatorName?.trim() || "Person 1";
   const nameB = state.roommateName?.trim() || "Person 2";
   const matchBand =
@@ -284,8 +289,74 @@ export default function ResultsView({ flowId }: { flowId: string }) {
         )}
       </Card>
 
-      {/* Dealbreakers alignment table */}
-      {dealbreakers && dealbreakers.length > 0 && (
+      {/* Practical flags — paid layer */}
+      {practicalFlags && practicalFlags.length > 0 && (
+        <Card className="overflow-hidden">
+          <div className="px-6 pt-6 pb-2"><span className="eyebrow">Friction points</span></div>
+          {practicalFlags.map((flag) => (
+            <div key={flag.id} className="border-t border-line px-6 py-4">
+              <div className="flex items-start justify-between gap-3">
+                <p className="font-display text-sm font-semibold text-ink">{flag.title}</p>
+                <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${flag.severity === "high" ? "bg-accent/15 text-accent-ink" : flag.severity === "medium" ? "bg-ink/10 text-ink-soft" : "bg-line text-ink-faint"}`}>{flag.severity}</span>
+              </div>
+              <p className="mt-1 text-sm text-ink-soft">{flag.detail}</p>
+              <p className="mt-2 text-xs font-medium text-ink"><span className="text-ink-faint">Talk about: </span>{flag.talkAbout}</p>
+            </div>
+          ))}
+        </Card>
+      )}
+
+      {/* Personality-interaction analysis — paid layer */}
+      {personalityInteractions && personalityInteractions.length > 0 && (
+        <Card className="overflow-hidden">
+          <div className="px-6 pt-6 pb-2"><span className="eyebrow">How you&apos;ll rub against each other</span></div>
+          {personalityInteractions.map((interaction) => (
+            <div key={interaction.axisName} className="border-t border-line px-6 py-5">
+              <div className="flex items-center gap-2">
+                <p className="eyebrow">{interaction.axisName}</p>
+                <span className="text-ink-faint text-xs">{interaction.traitA} · {interaction.traitB}</span>
+              </div>
+              <p className="mt-2 text-sm text-ink">{interaction.dynamic}</p>
+              <ul className="mt-3 space-y-1.5">
+                {interaction.advice.map((tip, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-ink-soft">
+                    <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />{tip}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </Card>
+      )}
+
+      {/* Pre-move-in conversation list — paid layer */}
+      {conversationList && conversationList.length > 0 && (
+        <Card className="p-6">
+          <span className="eyebrow">Before you sign</span>
+          <ol className="mt-4 space-y-2">
+            {conversationList.map((item, i) => (
+              <li key={i} className="flex items-start gap-3 text-sm text-ink">
+                <span className="font-display text-xs font-bold text-accent tnum mt-0.5 w-4 shrink-0">{i + 1}.</span>{item}
+              </li>
+            ))}
+          </ol>
+        </Card>
+      )}
+
+      {/* Paid CTA when practical layer not done */}
+      {!practicalFlags && (
+        <Card className="p-6">
+          <p className="eyebrow text-accent">Practical report</p>
+          <p className="mt-2 text-sm font-medium text-ink">Get the full picture before move-in</p>
+          <p className="mt-1 text-sm text-ink-soft">The practical assessment covers logistics, conflict style, and flags exactly where you'll clash.</p>
+          <a href={`/paid/${flowId}`} className="mt-4 inline-flex items-center gap-1.5 rounded-md border border-line bg-surface px-4 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-ink/[0.04]">
+            Take the practical assessment →
+          </a>
+        </Card>
+      )}
+
+      {/* Dealbreakers — paid layer only */}
+      {practicalFlags && dealbreakers && dealbreakers.length > 0 && (
         <Card className="overflow-hidden">
           <div className="px-6 pt-6 pb-2">
             <span className="eyebrow">Dealbreakers</span>
@@ -315,7 +386,6 @@ export default function ResultsView({ flowId }: { flowId: string }) {
         </Card>
       )}
 
-      <RiskAssessmentUpsellCard flowId={flowId} />
 
       <SaveResultCard flowId={flowId} />
     </div>

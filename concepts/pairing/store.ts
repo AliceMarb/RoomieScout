@@ -1,6 +1,7 @@
 import { kv } from "@/infrastructure/kv";
 import { computePersona, buildPersonaFromAxes, computeCompatibility } from "@/concepts/personas";
 import type { CompatibilityResult, Persona } from "@/concepts/personas";
+import type { PracticalProfile } from "@/concepts/pairing/practical-profile";
 
 export type Pairing = {
   id: string;
@@ -8,10 +9,12 @@ export type Pairing = {
   initiatorPersona: Persona;
   initiatorEmail?: string;
   initiatorName?: string;
+  initiatorPracticalProfile?: PracticalProfile;
   roommateInput?: string;
   roommatePersona?: Persona;
   roommateName?: string;
   roommateEmail?: string;
+  roommatePracticalProfile?: PracticalProfile;
   result?: CompatibilityResult;
   resultsReadyAt?: number;
   createdAt: string;
