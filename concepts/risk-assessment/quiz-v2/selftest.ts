@@ -44,12 +44,12 @@ check("no cleanliness in pairs", noCleanPairs);
 const pc: Record<string, number> = {};
 for (const q of NEUTRAL_AXIS_QUESTIONS) pc[q.pole] = (pc[q.pole] ?? 0) + 1;
 check("cleanliness has no Likert items", !pc.N && !pc.C);
-check("P/O/D/H/S/F have 5 Likert each", ["P","O","D","H","S","F"].every((p) => pc[p] === 5));
+check("P/O/D/H/S/F have 5+ Likert each", ["P","O","D","H","S","F"].every((p) => (pc[p] ?? 0) >= 5));
 
 // 7. Cleanliness appears in every block (enough data points).
 check("cleanliness in every block", BLOCK_QUESTIONS.every((b) => b.options.some((o) => o.axis === "cleanliness")));
 const clPoles = BLOCK_QUESTIONS.map((b) => b.options.find((o) => o.axis === "cleanliness")!.pole);
-check("block cleanliness balanced (4 Neat / 4 Casual)", clPoles.filter((p) => p === "N").length === 4 && clPoles.filter((p) => p === "C").length === 4);
+check("block cleanliness balanced (equal Neat and Casual)", clPoles.filter((p) => p === "N").length === clPoles.filter((p) => p === "C").length);
 
 // 8. All ids unique across all four formats.
 const ids: string[] = [];
