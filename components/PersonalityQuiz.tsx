@@ -60,7 +60,7 @@ function buildGroups(): QuizGroup[] {
       kind: "block",
       label: "Rankings",
       instruction: "Tap one to mark the most like you, then tap another for the least",
-      questions: shuffle(BLOCK_QUESTIONS).slice(0, 3),
+      questions: shuffle(BLOCK_QUESTIONS),
     },
   ];
 }
