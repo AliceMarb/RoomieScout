@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import type { Persona } from "@/concepts/personas";
 import { getAvatarPublicPath, getPersonaMeta } from "@/concepts/personas";
 import { getPersonaMetaV2 } from "@/concepts/personas/meta-v2";
@@ -10,9 +10,6 @@ export default function ShareableAvatarCard({ persona, className = "" }: { perso
   const cardRef = useRef<HTMLDivElement>(null);
   const [sharing, setSharing] = useState(false);
   const [useGeneratedArt, setUseGeneratedArt] = useState(true);
-  const [canShare, setCanShare] = useState(false);
-
-  useEffect(() => { setCanShare(typeof navigator !== "undefined" && "share" in navigator); }, []);
 
   const meta = getPersonaMeta(persona.code);
   const metaV2 = getPersonaMetaV2(persona.code);
@@ -22,23 +19,30 @@ export default function ShareableAvatarCard({ persona, className = "" }: { perso
   const decodedTraits = persona.axes.map((axis) => axis.chosen === "left" ? axis.left : axis.right);
 
   async function handleShare() {
+    const url = window.location.origin;
     const text = [
       `${persona.code} — ${displayTitle}`,
       `"${metaV2?.tagline ?? meta.tagline}"`,
       decodedTraits.join(" · "),
       "",
-      `Superpower: ${metaV2?.roommateSuperpower ?? meta.roommateSuperpower}`,
       `Best matches: ${(metaV2?.bestMatches ?? meta.bestMatches).join(", ")}`,
-      "",
-      "My Housemate Type on Homi",
     ].join("\n");
     const nav = typeof window !== "undefined" ? window.navigator : undefined;
     if (nav && "share" in nav && typeof nav.share === "function") {
       setSharing(true);
-      try { await nav.share({ title: displayTitle, text }); } catch { /* cancelled */ }
+      try {
+        const shareData: ShareData = { title: displayTitle, text, url };
+        try {
+          const res = await fetch(generatedSrc);
+          const blob = await res.blob();
+          const file = new File([blob], `${persona.code}.png`, { type: "image/png" });
+          if (nav.canShare?.({ files: [file] })) shareData.files = [file];
+        } catch { /* image unavailable — share without */ }
+        await nav.share(shareData);
+      } catch { /* cancelled */ }
       finally { setSharing(false); }
     } else if (nav?.clipboard) {
-      await nav.clipboard.writeText(text);
+      await nav.clipboard.writeText(`${text}\n\n${url}`);
     }
   }
 
@@ -153,7 +157,7 @@ export default function ShareableAvatarCard({ persona, className = "" }: { perso
             disabled={sharing}
             className="rounded-xl bg-slate-900 px-8 py-3.5 text-sm font-semibold text-white shadow-sm hover:bg-slate-800 disabled:opacity-60"
           >
-            {sharing ? "Sharing…" : canShare ? "Share your type" : "Copy card text"}
+            {sharing ? "Sharing…" : "Share your type"}
           </button>
         </div>
       </div>

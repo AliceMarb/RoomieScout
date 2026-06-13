@@ -22,36 +22,54 @@ export const NEUTRAL_AXIS_QUESTIONS: NeutralAxisQuestion[] = [
   { id: "so-p-03", kind: "axis", axis: "social", pole: "P", text: "If the common areas are loud, you'll retreat to your room to unwind" },
   { id: "so-p-04", kind: "axis", axis: "social", pole: "P", text: "A whole weekend at home with no plans sounds restful, not lonely" },
   { id: "so-p-05", kind: "axis", axis: "social", pole: "P", text: "You're happy to pass a roommate with just a quick hello" },
+  { id: "so-p-06", kind: "axis", axis: "social", pole: "P", text: "You're happy with roommates who are friendly but give each other space" },
+  { id: "so-p-07", kind: "axis", axis: "social", pole: "P", text: "You'd want parties at home kept to a minimum" },
+  { id: "so-p-08", kind: "axis", axis: "social", pole: "P", text: "You keep your comings and goings mostly to yourself" },
   // Social — Open (O)
   { id: "so-o-01", kind: "axis", axis: "social", pole: "O", text: "You're glad when a roommate's friends end up staying for dinner" },
   { id: "so-o-02", kind: "axis", axis: "social", pole: "O", text: "An impromptu shared dinner a couple nights a week sounds great" },
   { id: "so-o-03", kind: "axis", axis: "social", pole: "O", text: "You'd happily hang out in the common areas even when they're full of people" },
   { id: "so-o-04", kind: "axis", axis: "social", pole: "O", text: "Having people over two or three nights a week feels energizing" },
   { id: "so-o-05", kind: "axis", axis: "social", pole: "O", text: "You'd happily share meals with a roommate most weeknights" },
+  { id: "so-o-06", kind: "axis", axis: "social", pole: "O", text: "You'd love it if your roommates became real friends" },
+  { id: "so-o-07", kind: "axis", axis: "social", pole: "O", text: "You're happy to host a party at your place now and then" },
+  { id: "so-o-08", kind: "axis", axis: "social", pole: "O", text: "You'd happily join a roommate watching TV in the common area" },
   // Conflict — Direct (D)
   { id: "co-d-01", kind: "axis", axis: "conflict", pole: "D", text: "If something bugs you, you'd bring it up within a day or two" },
   { id: "co-d-02", kind: "axis", axis: "conflict", pole: "D", text: "You'd sort an issue out with a quick face-to-face chat" },
   { id: "co-d-03", kind: "axis", axis: "conflict", pole: "D", text: "You're fine sitting down to agree on house rules in the first week" },
   { id: "co-d-04", kind: "axis", axis: "conflict", pole: "D", text: "If a roommate owed you money, you'd bring it up that day" },
   { id: "co-d-05", kind: "axis", axis: "conflict", pole: "D", text: "After agreeing on something, you'd check a week later that it stuck" },
+  { id: "co-d-06", kind: "axis", axis: "conflict", pole: "D", text: "You'd ask a roommate to quiet down if they kept you up" },
+  { id: "co-d-07", kind: "axis", axis: "conflict", pole: "D", text: "You'd speak up if a roommate threw a party without asking" },
+  { id: "co-d-08", kind: "axis", axis: "conflict", pole: "D", text: "You'd bring up a chore that keeps getting skipped" },
   // Conflict — Harmonious (H)
   { id: "co-h-01", kind: "axis", axis: "conflict", pole: "H", text: "You'd let a small annoyance go three or four times before saying anything" },
   { id: "co-h-02", kind: "axis", axis: "conflict", pole: "H", text: "You'd wait days for the right moment to bring something up" },
   { id: "co-h-03", kind: "axis", axis: "conflict", pole: "H", text: "If a roommate slips up once, you'd assume it won't happen again" },
   { id: "co-h-04", kind: "axis", axis: "conflict", pole: "H", text: "You'd drop a point to keep the peace at home" },
   { id: "co-h-05", kind: "axis", axis: "conflict", pole: "H", text: "You'd quietly change your own routine to avoid a confrontation" },
+  { id: "co-h-06", kind: "axis", axis: "conflict", pole: "H", text: "You'd wear earplugs before asking a roommate to be quieter at night" },
+  { id: "co-h-07", kind: "axis", axis: "conflict", pole: "H", text: "You'd go along with a roommate's party even if you weren't up for it" },
+  { id: "co-h-08", kind: "axis", axis: "conflict", pole: "H", text: "You'd quietly pick up a skipped chore instead of nagging" },
   // Structure — Structured (S)
   { id: "st-s-01", kind: "axis", axis: "structure", pole: "S", text: "You'd want a written chore schedule up in the first week" },
   { id: "st-s-02", kind: "axis", axis: "structure", pole: "S", text: "You'd want it spelled out which food and items are shared or off-limits" },
   { id: "st-s-03", kind: "axis", axis: "structure", pole: "S", text: "You'd want each person assigned specific chores, not just 'pitch in'" },
   { id: "st-s-04", kind: "axis", axis: "structure", pole: "S", text: "You'd want shared costs agreed in writing before move-in" },
   { id: "st-s-05", kind: "axis", axis: "structure", pole: "S", text: "Not knowing whose turn it is to buy toilet paper would bug you" },
+  { id: "st-s-06", kind: "axis", axis: "structure", pole: "S", text: "You'd want parties planned ahead, not sprung on you" },
+  { id: "st-s-07", kind: "axis", axis: "structure", pole: "S", text: "You'd want quiet hours set on weeknights" },
+  { id: "st-s-08", kind: "axis", axis: "structure", pole: "S", text: "You'd want guests cleared with each other first" },
   // Structure — Flexible (F)
   { id: "st-f-01", kind: "axis", axis: "structure", pole: "F", text: "You'd clean when it looks like it needs it, on no set schedule" },
   { id: "st-f-02", kind: "axis", axis: "structure", pole: "F", text: "You're fine figuring out house rules as situations come up" },
   { id: "st-f-03", kind: "axis", axis: "structure", pole: "F", text: "You're easy about sharing food and stuff without keeping track" },
   { id: "st-f-04", kind: "axis", axis: "structure", pole: "F", text: "You're happy keeping chores and money casual and flexible" },
   { id: "st-f-05", kind: "axis", axis: "structure", pole: "F", text: "You'd sort who-does-what with a quick text, not a system" },
+  { id: "st-f-06", kind: "axis", axis: "structure", pole: "F", text: "You'd keep parties and late nights spontaneous" },
+  { id: "st-f-07", kind: "axis", axis: "structure", pole: "F", text: "You'd handle noise and sleep differences case by case" },
+  { id: "st-f-08", kind: "axis", axis: "structure", pole: "F", text: "You'd let guests come and go without checking in" },
 ];
 
 // FORMAT 2 — A/B pairs (symmetric axes only), concrete + American English.
@@ -91,6 +109,34 @@ export const PAIR_QUESTIONS: PairQuestion[] = [
   { id: "pr-co-03", kind: "pair", options: [
     { id: "pr-co-03a", axis: "conflict", pole: "D", text: "I'd hash it out instead of stewing" },
     { id: "pr-co-03b", axis: "conflict", pole: "H", text: "I'd let it go instead of bringing it up" },
+  ] },
+  { id: "pr-so-04", kind: "pair", options: [
+    { id: "pr-so-04a", axis: "social", pole: "O", text: "I'd love to be close friends with my roommates" },
+    { id: "pr-so-04b", axis: "social", pole: "P", text: "I'd be happy with friendly but independent roommates" },
+  ] },
+  { id: "pr-so-05", kind: "pair", options: [
+    { id: "pr-so-05a", axis: "social", pole: "O", text: "I'm up for parties at our place" },
+    { id: "pr-so-05b", axis: "social", pole: "P", text: "I'd keep our place party-free" },
+  ] },
+  { id: "pr-so-06", kind: "pair", options: [
+    { id: "pr-so-06a", axis: "social", pole: "P", text: "I keep my room private" },
+    { id: "pr-so-06b", axis: "social", pole: "O", text: "I keep my door open to roommates" },
+  ] },
+  { id: "pr-st-04", kind: "pair", options: [
+    { id: "pr-st-04a", axis: "structure", pole: "S", text: "I'd want quiet hours we both agree on" },
+    { id: "pr-st-04b", axis: "structure", pole: "F", text: "We can just be considerate about noise" },
+  ] },
+  { id: "pr-st-05", kind: "pair", options: [
+    { id: "pr-st-05a", axis: "structure", pole: "S", text: "I'd want a shared calendar for chores and plans" },
+    { id: "pr-st-05b", axis: "structure", pole: "F", text: "We can keep track of stuff in our heads" },
+  ] },
+  { id: "pr-co-04", kind: "pair", options: [
+    { id: "pr-co-04a", axis: "conflict", pole: "D", text: "I'd speak up if a party got out of hand" },
+    { id: "pr-co-04b", axis: "conflict", pole: "H", text: "I'd ride out a wild party night" },
+  ] },
+  { id: "pr-co-05", kind: "pair", options: [
+    { id: "pr-co-05a", axis: "conflict", pole: "D", text: "I'd tell a roommate if their things crept into my space" },
+    { id: "pr-co-05b", axis: "conflict", pole: "H", text: "I'd just move a roommate's things aside without a word" },
   ] },
 ];
 
@@ -144,6 +190,30 @@ export const BLOCK_QUESTIONS: BlockQuestion[] = [
     { id: "bl-08-so", axis: "social", pole: "P", text: "I need solo downtime" },
     { id: "bl-08-co", axis: "conflict", pole: "D", text: "I'd flag it if daytime noise made it hard to focus" },
     { id: "bl-08-st", axis: "structure", pole: "F", text: "We can share the common space freely" },
+  ] },
+  { id: "bl-09", kind: "block", options: [
+    { id: "bl-09-cl", axis: "cleanliness", pole: "N", text: "I take the trash out before it overflows" },
+    { id: "bl-09-so", axis: "social", pole: "P", text: "I'd want roommates to knock before coming in" },
+    { id: "bl-09-co", axis: "conflict", pole: "D", text: "I'd point out if I was always the one cleaning up" },
+    { id: "bl-09-st", axis: "structure", pole: "S", text: "I'd want a clear way to track who paid for what" },
+  ] },
+  { id: "bl-10", kind: "block", options: [
+    { id: "bl-10-cl", axis: "cleanliness", pole: "C", text: "I'm fine with shoes on indoors" },
+    { id: "bl-10-so", axis: "social", pole: "O", text: "I'd happily join roommates hanging out" },
+    { id: "bl-10-co", axis: "conflict", pole: "H", text: "I'd do extra chores myself to avoid friction" },
+    { id: "bl-10-st", axis: "structure", pole: "F", text: "I'd track shared costs loosely and settle up later" },
+  ] },
+  { id: "bl-11", kind: "block", options: [
+    { id: "bl-11-cl", axis: "cleanliness", pole: "N", text: "I rinse my dishes before they pile up" },
+    { id: "bl-11-so", axis: "social", pole: "O", text: "I'd want us to do things together, not just share a space" },
+    { id: "bl-11-co", axis: "conflict", pole: "D", text: "I'd speak up if a party ran really late" },
+    { id: "bl-11-st", axis: "structure", pole: "S", text: "I'd want a heads-up before someone throws a party" },
+  ] },
+  { id: "bl-12", kind: "block", options: [
+    { id: "bl-12-cl", axis: "cleanliness", pole: "C", text: "I'm relaxed if the place looks lived-in" },
+    { id: "bl-12-so", axis: "social", pole: "P", text: "I'm fine if we mostly do our own thing" },
+    { id: "bl-12-co", axis: "conflict", pole: "H", text: "I'd let a loud night go without comment" },
+    { id: "bl-12-st", axis: "structure", pole: "F", text: "We can sort house stuff out as we go" },
   ] },
 ];
 

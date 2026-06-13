@@ -200,11 +200,12 @@ function BlockPage({
             "rounded-lg border p-4 transition-colors",
             done ? "border-accent/40" : "border-line",
           )}>
-            {(done || waitingForLeast) && (
-              <p className={cn("eyebrow mb-3", done ? "text-accent" : "text-ink-soft")}>
-                {done ? "✓ Done" : "Now tap the least like you"}
-              </p>
-            )}
+            <p className={cn(
+              "eyebrow mb-3 transition-colors",
+              done ? "text-accent" : waitingForLeast ? "text-ink-soft" : "invisible",
+            )}>
+              {done ? "✓ Done" : "Now tap the least like you"}
+            </p>
             <div className="space-y-2">
               {q.options.map((opt) => {
                 const isMost = draft.most === opt.id;
