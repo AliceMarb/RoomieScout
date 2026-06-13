@@ -1,5 +1,5 @@
-import PersonalityQuiz from "@/components/PersonalityQuiz";
+import PersonalityQuizClient from "@/components/PersonalityQuizClient";
 
 export default function QuizPage() {
-  return <PersonalityQuiz skipIntro />;
+  return <PersonalityQuizClient skipIntro />;
 }
