@@ -108,8 +108,9 @@ function PersonaCard({ persona, label }: { persona: Persona; label: string }) {
       {meta && (
         <div className="space-y-2 pt-1 border-t border-line">
           <div><p className="eyebrow mb-0.5">Roommate superpower</p><p className="text-xs text-ink-soft">{meta.roommateSuperpower}</p></div>
+          <div><p className="eyebrow mb-0.5">Growth edge</p><p className="text-xs text-ink-soft">{meta.growthEdge}</p></div>
+          <div><p className="eyebrow mb-0.5">What you need</p><p className="text-xs text-ink-soft">{meta.whatYouNeed}</p></div>
           <div><p className="eyebrow mb-0.5">Danger zone</p><p className="text-xs text-ink-soft">{meta.dangerZone}</p></div>
-          <div><p className="eyebrow mb-0.5">Household energy</p><p className="text-xs italic text-ink-faint">{meta.householdEnergy}</p></div>
           <div>
             <p className="eyebrow mb-1">Connects best with</p>
             <div className="flex flex-wrap gap-1">
