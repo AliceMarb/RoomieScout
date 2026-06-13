@@ -48,13 +48,13 @@ function buildGroups(): QuizGroup[] {
       label: "Preferences",
       instruction: "Tap everything that sounds like you",
       disclaimer: "Pick whatever feels closest — it doesn't need to be a perfect match",
-      questions: shuffle(NEUTRAL_AXIS_QUESTIONS).slice(0, 6),
+      questions: shuffle(NEUTRAL_AXIS_QUESTIONS),
     },
     {
       kind: "pair",
       label: "This or that",
       instruction: "For each pair, pick the one that's more like you",
-      questions: shuffle(PAIR_QUESTIONS).slice(0, 4),
+      questions: shuffle(PAIR_QUESTIONS),
     },
     {
       kind: "block",
