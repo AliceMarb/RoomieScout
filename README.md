@@ -138,9 +138,10 @@ NEXT_PUBLIC_DEBUG_STT=false
 ### Pages
 | Path | What it is |
 | --- | --- |
-| `app/page.tsx` | Home — renders the voice interview UI |
+| `app/page.tsx` | Home — landing page with quiz entry point |
+| `app/quiz/page.tsx` | Free personality quiz — 3-page grouped format (Likert → this-or-that pairs → most/least blocks) |
 | `app/share/[flowId]/page.tsx` | Shows the initiator's Housemate Type + share link |
-| `app/join/[flowId]/page.tsx` | The roommate's interview entry point |
+| `app/join/[flowId]/page.tsx` | The roommate's quiz entry point |
 | `app/results/[flowId]/page.tsx` | Compatibility score and breakdown for both people |
 
 ### API routes
@@ -167,7 +168,7 @@ NEXT_PUBLIC_DEBUG_STT=false
 | `concepts/voice/` | All speech I/O — ElevenLabs TTS + STT, local Whisper STT + Kokoro TTS, provider dispatch |
 | `concepts/rendezvous/` | Email-based matching — lets two people find each other without sharing a link |
 | `concepts/notification.ts` | Email notification helper (Nodemailer / Gmail) |
-| `concepts/risk-assessment/` | **TODO** — paid Risk Assessment concept (not yet wired to routes or payment) |
+| `concepts/risk-assessment/` | **TODO** — paid Risk Assessment concept (not yet wired to routes or payment). `quiz-v2/` contains the question bank (30 Likert axis items, 9 A/B pairs, 8 most/least blocks, 8 frequency items) — now used by the free personality quiz; not yet wired into the RiskAssessment deep-dive flow |
 
 ### Infrastructure (`infrastructure/`)
 | Path | What it does |

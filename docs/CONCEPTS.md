@@ -216,7 +216,7 @@ refund (p: Purchase)
 
 ---
 
-**concept** RiskAssessment [Participant] *(TODO — concept module exists at `concepts/risk-assessment/`; routes, payment wiring, and report generation not yet built)*
+**concept** RiskAssessment [Participant] *(TODO — concept module exists at `concepts/risk-assessment/`; routes, payment wiring, and report generation not yet built. The quiz question bank lives at `concepts/risk-assessment/quiz-v2/` and defines four question formats: Likert axis items, A/B forced-choice pairs, most/least ranking blocks, and frequency/count items. The question bank and scorer (`computeAxisResults`) are now wired into the free personality quiz at `app/api/quiz/submit` and `components/PersonalityQuiz.tsx` — not yet wired into the RiskAssessment gather flow)*
 
 **purpose** enable two people to receive a structured assessment of practical risks before committing to a shared living arrangement
 
@@ -346,3 +346,4 @@ Gaps between the concepts above and the code:
 4. **Remove or gate the legacy text path.** `app/api/flows/[flowId]/respond` accepts free text and builds a hash-based persona (`computePersona`), bypassing Interview and Persona entirely.
 5. **Align code naming with concepts.** The code calls a Pairing a "flow" (`MatchingFlow`, `flowId`); consider renaming, or at minimum never let "flow" leak into user-facing copy or docs.
 6. **Dead code.** `lib/assessCompatibility.ts` (unwired scorer), `lib/scoutPrompt.ts`, unused `resend` dependency.
+7. **Wire quiz-v2 into RiskAssessment gather flow.** `concepts/risk-assessment/quiz-v2/` exports `NEUTRAL_AXIS_QUESTIONS`, `PAIR_QUESTIONS`, `BLOCK_QUESTIONS`, and `FREQUENCY_QUESTIONS` with `computeAxisResults()`. The free personality quiz (`app/api/quiz/submit`, `components/PersonalityQuiz.tsx`) now uses quiz-v2 with a 3-page grouped format (axis agree/pass → A/B pairs → most/least blocks). The RiskAssessment deep-dive gather flow still uses placeholder text inputs and does not yet use quiz-v2.
