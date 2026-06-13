@@ -1,9 +1,33 @@
 import { NextResponse } from "next/server";
-import { scoreQuiz, type QuizAnswers } from "@/concepts/interview/quiz";
+import {
+  NEUTRAL_AXIS_QUESTIONS,
+  PAIR_QUESTIONS,
+  BLOCK_QUESTIONS,
+  FREQUENCY_QUESTIONS,
+  computeAxisResults,
+  type Answers,
+  type AxisResult,
+} from "@/concepts/risk-assessment/quiz-v2";
 import { buildPersonaFromAxes, computeCompatibility } from "@/concepts/personas";
 import { createPairingFromInterview, getPairing, updatePairing, generateCompatibilitySummary } from "@/concepts/pairing";
 
 const PROCESSING_DELAY_MS = 2500;
+
+/**
+ * Convert quiz-v2 AxisResult[] to the format buildPersonaFromAxes expects.
+ *
+ * quiz-v2 AXES order:  [cleanliness, social, conflict, structure]
+ * HMTI_AXES order:     [cleanliness, social, rhythm(=structure), rules(=conflict)]
+ *
+ * Swap indices 2 and 3 to align the two.
+ */
+function axisResultsToChoices(results: AxisResult[]) {
+  const reordered = [results[0], results[1], results[3], results[2]];
+  return reordered.map((r) => ({
+    chosen: (r.score >= 50 ? "left" : "right") as "left" | "right",
+    strength: Math.round(55 + (Math.abs(r.score - 50) / 50) * 40),
+  }));
+}
 
 export async function POST(req: Request) {
   let body: { answers?: unknown; flowId?: unknown };
@@ -14,10 +38,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "answers is required" }, { status: 400 });
   }
 
-  const answers = body.answers as QuizAnswers;
+  const answers = body.answers as Answers;
   const flowId = typeof body.flowId === "string" ? body.flowId : null;
 
-  const persona = buildPersonaFromAxes(scoreQuiz(answers));
+  const axisResults = computeAxisResults(
+    NEUTRAL_AXIS_QUESTIONS, answers, PAIR_QUESTIONS, BLOCK_QUESTIONS, FREQUENCY_QUESTIONS,
+  );
+  const persona = buildPersonaFromAxes(axisResultsToChoices(axisResults));
 
   if (flowId) {
     const pairing = await getPairing(flowId);

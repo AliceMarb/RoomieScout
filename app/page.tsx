@@ -41,7 +41,7 @@ export default function LandingPage() {
             Find out your<br />roommate type.
           </h1>
           <p className="text-ink-soft text-lg leading-relaxed">
-            16 personalities. One quick quiz.<br />No awkward surprises.
+            16 personalities. One short quiz.<br />No awkward surprises.
           </p>
         </div>
 
