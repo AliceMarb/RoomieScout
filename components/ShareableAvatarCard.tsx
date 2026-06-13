@@ -124,10 +124,18 @@ export default function ShareableAvatarCard({ persona, className = "" }: { perso
           <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Danger zone</p>
           <p className="mt-1 text-sm text-slate-700">{metaV2?.dangerZone ?? meta.dangerZone}</p>
         </div>
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Household energy</p>
-          <p className="mt-1 text-sm italic text-slate-600">{metaV2?.householdEnergy ?? meta.householdEnergy}</p>
-        </div>
+        {metaV2?.growthEdge && (
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Growth edge</p>
+            <p className="mt-1 text-sm text-slate-700">{metaV2.growthEdge}</p>
+          </div>
+        )}
+        {metaV2?.whatYouNeed && (
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">What you need</p>
+            <p className="mt-1 text-sm text-slate-700">{metaV2.whatYouNeed}</p>
+          </div>
+        )}
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Connects best with</p>
           <div className="mt-2 flex flex-wrap gap-1.5">
