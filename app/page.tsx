@@ -1,37 +1,12 @@
 import Link from "next/link";
 import { PageShell, Wordmark, cn } from "@/components/ui";
 
-const TYPES = [
-  { code: "NPDS", label: "The Curator" },
-  { code: "COHF", label: "The Disco Ball" },
-  { code: "CPHF", label: "The Cryptid" },
-  { code: "NODS", label: "The Captain" },
-  { code: "NPHF", label: "The Clean Ghost" },
-  { code: "COHS", label: "The Teddy Bear" },
-];
-
 export default function LandingPage() {
   return (
     <PageShell>
       <Wordmark />
 
       <div className="flex flex-col items-center justify-center min-h-[75vh] text-center">
-        {/* Type badges — decorative strip */}
-        <div className="mb-10 flex flex-wrap justify-center gap-2 max-w-sm opacity-60">
-          {TYPES.map(({ code, label }) => (
-            <span
-              key={code}
-              className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1 text-xs text-ink-soft"
-            >
-              <span className="font-display tnum text-ink-faint">{code}</span>
-              <span>{label}</span>
-            </span>
-          ))}
-          <span className="inline-flex items-center rounded-full border border-line bg-surface px-3 py-1 text-xs text-ink-faint">
-            +10 more
-          </span>
-        </div>
-
         {/* Hero */}
         <div className="space-y-4 max-w-md">
           <p className="eyebrow tracking-widest text-accent-ink">

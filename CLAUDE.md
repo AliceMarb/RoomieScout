@@ -57,6 +57,9 @@ System 1 produces real transcripts + personas; system 2's result still comes fro
 ### Email (now live)
 `lib/email.ts` (`sendResultsEmail`) is real: Nodemailer over Gmail, gated on `EMAIL_USER`/`EMAIL_PASS`, throwing if unset. The flow respond route fires it best-effort (`.catch` logs, never blocks the response) once a roommate submits, but only if `SharePanel` saved an `initiatorEmail` first. The results link is built from `NEXT_PUBLIC_APP_URL`. Note: `resend` is in `package.json` but unused — Nodemailer is the live path.
 
+### Quiz pagination
+- **Max 5 questions per page.** `PAGE_SIZE = 5` in `components/PersonalityQuiz.tsx`. Never put all questions of a type on one page, and don't raise this limit.
+
 ### Conventions
 - **API route pattern:** parse JSON (400 on bad body), check the resource exists (404), then act. LLM/agent calls always carry a fallback.
 - **Both stores are in-memory only** — lost on restart, not shared across serverless instances. `TODO` swap for a DB.

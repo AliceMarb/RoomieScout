@@ -41,28 +41,50 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
+const PAGE_SIZE = 5;
+
+function chunk<T>(arr: T[], size: number): T[][] {
+  const out: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+  return out;
+}
+
 function buildGroups(): QuizGroup[] {
-  return [
-    {
+  const axisChunks = chunk(shuffle(NEUTRAL_AXIS_QUESTIONS), PAGE_SIZE);
+  const pairChunks = chunk(shuffle(PAIR_QUESTIONS), PAGE_SIZE);
+  const blockChunks = chunk(shuffle(BLOCK_QUESTIONS), PAGE_SIZE);
+
+  const groups: QuizGroup[] = [];
+
+  axisChunks.forEach((qs, i) =>
+    groups.push({
       kind: "axis",
-      label: "Preferences",
+      label: axisChunks.length > 1 ? `Preferences ${i + 1}/${axisChunks.length}` : "Preferences",
       instruction: "Tap everything that sounds like you",
       disclaimer: "Pick whatever feels closest — it doesn't need to be a perfect match",
-      questions: shuffle(NEUTRAL_AXIS_QUESTIONS),
-    },
-    {
+      questions: qs,
+    })
+  );
+
+  pairChunks.forEach((qs, i) =>
+    groups.push({
       kind: "pair",
-      label: "This or that",
+      label: pairChunks.length > 1 ? `This or that ${i + 1}/${pairChunks.length}` : "This or that",
       instruction: "For each pair, pick the one that's more like you",
-      questions: shuffle(PAIR_QUESTIONS),
-    },
-    {
+      questions: qs,
+    })
+  );
+
+  blockChunks.forEach((qs, i) =>
+    groups.push({
       kind: "block",
-      label: "Rankings",
+      label: blockChunks.length > 1 ? `Rankings ${i + 1}/${blockChunks.length}` : "Rankings",
       instruction: "Tap one to mark the most like you, then tap another for the least",
-      questions: shuffle(BLOCK_QUESTIONS),
-    },
-  ];
+      questions: qs,
+    })
+  );
+
+  return groups;
 }
 
 // ── block draft state ─────────────────────────────────────────────────────────
@@ -287,7 +309,7 @@ export default function PersonalityQuiz({ flowId, skipIntro }: { flowId?: string
   function handleContinue() {
     if (groupIdx < groups.length - 1) {
       setGroupIdx((i) => i + 1);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo({ top: 0, behavior: "instant" });
     } else {
       submitQuiz(answers);
     }
